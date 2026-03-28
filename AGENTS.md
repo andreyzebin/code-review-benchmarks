@@ -69,6 +69,12 @@ class LLMClient(ABC):
     def complete_json(self, prompt: str) -> dict: ...
 ```
 
+Two concrete clients are available:
+- `AnthropicLLMClient` — default, uses `ANTHROPIC_API_KEY`
+- `OpenAILLMClient(model, api_url, api_key)` — any OpenAI-compatible endpoint (DeepSeek, Ollama, vLLM, OpenAI, etc.)
+
+The active client is selected in `config.yaml`: if `judge.api_url` is set, `OpenAILLMClient` is used; otherwise `AnthropicLLMClient`.
+
 `_build_prompt` and `_interpret` are pure functions — easy to test without mocking.
 
 ### `run_scenario` (`runner/run.py`)
