@@ -4,10 +4,10 @@ Benchmark system for measuring and regression-testing a code review agent that w
 
 ## How it works
 
-1. Loads a YAML scenario (diff, PR metadata, Jira ticket)
-2. Starts fake Bitbucket and Jira servers locally
-3. Calls the agent with substituted URLs — agent works normally, unaware it's a test
-4. Captures everything the agent wrote (comments, review status)
+1. Loads a YAML scenario (PR branches, expected findings)
+2. Creates a real pull request in Bitbucket from the scenario's branches
+3. Calls the agent with the PR — agent works against real Bitbucket, finds the Jira ticket on its own
+4. Reads back what the agent wrote (comments, review status)
 5. LLM-as-judge scores the output against expected findings
 
 ## Quickstart
@@ -16,6 +16,13 @@ Benchmark system for measuring and regression-testing a code review agent that w
 cd benchmark
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+# Set required env vars
+export BITBUCKET_URL=https://bitbucket.example.com
+export BITBUCKET_PROJECT=MYPROJ
+export BITBUCKET_REPO=my-repo
+export BITBUCKET_TOKEN=...
+export ANTHROPIC_API_KEY=...
 
 # Check scenarios load correctly
 python cli.py run --dry-run
@@ -47,6 +54,14 @@ python cli.py history
 Edit `benchmark/config.yaml`:
 
 ```yaml
+bitbucket:
+  connection:
+    base_url: "${BITBUCKET_URL}"
+    project: "${BITBUCKET_PROJECT}"
+    repo: "${BITBUCKET_REPO}"
+    auth:
+      env: BITBUCKET_TOKEN
+
 agent:
   base_url: "http://localhost:8080"
   api_key: "${AGENT_API_KEY}"
@@ -56,6 +71,8 @@ judge:
   model: "claude-opus-4-6"
   temperature: 0
 ```
+
+`${VAR}` placeholders are expanded from environment variables at runtime.
 
 ## Scenarios
 
@@ -72,7 +89,7 @@ judge:
 | SCEN-007 | bug | Python | Off-by-one in pagination |
 | SCEN-008 | security | Java | Hardcoded AWS credentials |
 
-Each scenario is a self-contained YAML file with input data and expected findings.
+Each scenario requires a matching feature branch to already exist in the target repository.
 
 ## Adding a scenario
 
@@ -85,15 +102,11 @@ tags: [java, bug]
 
 input:
   bitbucket:
-    base_provider: fixture
-    data:
-      pull_request: { id: 1, title: "...", ... }
-      diff: [...]
-      codebase_context: [...]
-  jira:
-    base_provider: fixture
-    data:
-      issue: { key: "PROJ-1", summary: "...", ... }
+    provider: real
+    pull_request:
+      from_branch: "feature/PROJ-900-your-feature"
+      to_branch: "main"
+      title: "[BENCHMARK] SCEN-009: Your scenario"
 
 expected_output:
   required_comments:
@@ -104,11 +117,19 @@ expected_output:
       description_keywords:
         - ["keyword1", "keyword2"]  # any of these must appear
       rationale: "Why this comment is required"
+  forbidden_comments:
+    - description: "Comment topic the agent must not raise"
   expected_status_change: "NEEDS_WORK"
   thresholds:
     min_score: 0.70
     min_required_found: 1
     max_false_positives: 3
+
+metadata:
+  difficulty: medium
+  language: java
+  pr_size: small
+  scenario_type: bug
 ```
 
 ## Running tests
@@ -122,12 +143,14 @@ pytest
 
 ```
 benchmark/
-├── fake_servers/       # Fake Bitbucket + Jira (FastAPI)
-│   └── providers/      # fixture / live / overlay data providers
-├── runner/             # scenario loader, agent client, judge, scorer
+├── bitbucket/          # BitbucketPRProxy ABC + RealBitbucketFactory
+├── runner/             # scenario loader, agent client, LLM judge, scorer
 ├── scenarios/          # YAML test scenarios
-├── prompts/            # LLM judge prompt
-├── tests/              # unit tests (38 tests)
+│   ├── java/
+│   ├── python/
+│   └── typescript/
+├── prompts/            # LLM judge prompt template
+├── tests/              # integration tests for judge
 ├── cli.py
 └── config.yaml
 ```
