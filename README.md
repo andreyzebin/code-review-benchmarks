@@ -76,24 +76,30 @@ judge:
 
 ## Scenarios
 
+Each scenario is a YAML file that declares a `from_branch` and a `to_branch`. **The branches must already exist in the target Bitbucket repository** — the benchmark does not create or manage code. The feature branch is the actual deliverable of the scenario: it contains the bug, security flaw, or design issue that the agent is expected to catch. Preparing that branch (writing the code, pushing it) is part of authoring the scenario.
+
+At runtime the benchmark opens a PR from `from_branch` → `to_branch`, triggers the agent, reads back the comments, and closes the PR.
+
 8 built-in scenarios in `benchmark/scenarios/`:
 
-| ID | Type | Language | What's tested |
-|---|---|---|---|
-| SCEN-001 | bug | Java | NPE from unguarded Optional |
-| SCEN-002 | security | Python | SQL injection via f-string |
-| SCEN-003 | design | Java | God class / SRP violation |
-| SCEN-004 | performance | Python | N+1 queries in loop |
-| SCEN-005 | test_coverage | TypeScript | New function without tests |
-| SCEN-006 | style | Java | Clean code — agent should approve |
-| SCEN-007 | bug | Python | Off-by-one in pagination |
-| SCEN-008 | security | Java | Hardcoded AWS credentials |
+| ID | Type | Language | Branch | What's tested |
+|---|---|---|---|---|
+| SCEN-001 | bug | Java | `feature/PROJ-123-get-user-by-email` | NPE from unguarded Optional |
+| SCEN-002 | security | Python | `feature/PROJ-200-user-search` | SQL injection via f-string |
+| SCEN-003 | design | Java | `feature/PROJ-300-order-management` | God class / SRP violation |
+| SCEN-004 | performance | Python | `feature/PROJ-400-team-dashboard` | N+1 queries in loop |
+| SCEN-005 | test_coverage | TypeScript | `feature/PROJ-500-price-calc` | New function without tests |
+| SCEN-006 | style | Java | `feature/PROJ-600-product-mapper` | Clean code — agent should approve |
+| SCEN-007 | bug | Python | `feature/PROJ-700-pagination` | Off-by-one in pagination |
+| SCEN-008 | security | Java | `feature/PROJ-800-s3-upload` | Hardcoded AWS credentials |
 
-Each scenario requires a matching feature branch to already exist in the target repository.
+All eight branches must exist in the repository pointed to by `config.yaml`.
 
 ## Adding a scenario
 
-Create a YAML file in `benchmark/scenarios/<language>/SCEN-NNN-name.yaml`:
+**Step 1 — prepare the branch.** Push a feature branch to the target repository that contains the code problem you want to test. This branch is a permanent fixture; it should never be merged. The code on the branch is the ground truth for the scenario.
+
+**Step 2 — write the YAML.** Create `benchmark/scenarios/<language>/SCEN-NNN-name.yaml` referencing that branch:
 
 ```yaml
 id: SCEN-009
