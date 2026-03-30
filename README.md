@@ -1,58 +1,120 @@
 # Code Review Agent Benchmark
 
-Benchmark system for measuring and regression-testing a code review agent that works with Bitbucket Server.
+Measures and regression-tests a code review agent that works against Bitbucket Server.
+Each scenario is a real pull request — the benchmark opens it, triggers the agent, reads
+back what the agent wrote, and scores it with an LLM judge.
 
 ## How it works
 
-1. Loads a YAML scenario (PR branches, expected findings)
-2. Creates a real pull request in Bitbucket from the scenario's branches
-3. Calls the agent with the PR — agent works against real Bitbucket
-4. Reads back what the agent wrote (comments, review status)
-5. LLM-as-judge scores the output against expected findings
+```
+Scenario YAML
+    │  from_branch / to_branch
+    ▼
+Bitbucket Server  ◄──────────────────────────────────────────────┐
+    │  open PR                                                    │
+    ▼                                                             │
+Agent under test  ──── reviews PR, posts comments ───────────────┘
+    │
+    ▼
+Benchmark reads comments + review status (agent account only)
+    │
+    ▼
+LLM judge scores against expected_output in scenario YAML
+    │
+    ▼
+Pass / Fail  +  detailed report
+```
+
+---
 
 ## Quickstart
 
+### 1 — Clone and run the interactive setup wizard
+
 ```bash
+git clone https://github.com/andreyzebin/code-review-benchmarks
+cd code-review-benchmarks
+./setup.sh
+```
+
+The wizard will ask you for:
+
+| Prompt | Example |
+|---|---|
+| Bitbucket Server URL | `https://bitbucket.example.com` |
+| Project key | `MYPROJ` |
+| Repository slug | `orderflow` |
+| Personal access token | `ATBBxxxxxxxx` |
+| Agent bot account username | `review-bot` |
+| Agent base URL | `http://localhost:8080` |
+| Judge LLM (Anthropic or OpenAI-compatible) | `1` |
+| Anthropic API key | `sk-ant-…` |
+
+It will also print the exact `git push` commands to mirror the example repository
+into your Bitbucket instance (see step 2 below).
+
+At the end it writes a `.env` file, installs Python dependencies, and runs
+`cli.py run --dry-run` to confirm scenarios load correctly.
+
+---
+
+### 2 — Mirror the example repository
+
+The scenarios target the **FlowMart order service** — a Spring Boot / Gradle Java
+project at [`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow).
+Mirror it into the Bitbucket project you configured above:
+
+```bash
+git clone --mirror https://github.com/andreyzebin/orderflow.git orderflow-mirror
+cd orderflow-mirror
+git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
+git push bitbucket --mirror
+cd .. && rm -rf orderflow-mirror
+```
+
+> The repository has one branch per scenario plus `main`. Never merge scenario
+> branches — they are permanent fixtures.
+
+---
+
+### 3 — Run the benchmark
+
+```bash
+source .env
 cd benchmark
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+.venv/bin/python cli.py run --agent-url http://localhost:8080
+```
 
-# Set required env vars
-export BITBUCKET_URL=https://bitbucket.example.com
-export BITBUCKET_PROJECT=MYPROJ
-export BITBUCKET_REPO=my-repo
-export BITBUCKET_TOKEN=...
-export BITBUCKET_AGENT_ACCOUNT=agent-bot   # Bitbucket username of the agent under test
-export ANTHROPIC_API_KEY=...
+Useful flags:
 
-# Check scenarios load correctly
-python cli.py run --dry-run
-
-# Run all scenarios against your agent
-AGENT_API_KEY=... python cli.py run --agent-url http://localhost:8080
-
-# Run a single scenario
-python cli.py run --scenario SCEN-009
+```bash
+# Single scenario
+python cli.py run --scenario SCEN-009 --agent-url http://localhost:8080
 
 # Filter by tag
-python cli.py run --tag java --tag security
+python cli.py run --tag security --agent-url http://localhost:8080
 
-# Compare with previous run
-python cli.py run --compare-with last
+# Dry-run (no real PR, no agent call — just validates YAML)
+python cli.py run --dry-run
 
-# A/B test two versions
+# Compare with the previous run
+python cli.py run --compare-with last --agent-url http://localhost:8080
+
+# A/B test two agent versions
 python cli.py ab --agent-a http://agent-v1:8080 --agent-b http://agent-v2:8080
 
-# Show last run results
+# Show last run report
 python cli.py report last
 
 # Run history
 python cli.py history
 ```
 
-## Configuration
+---
 
-Edit `benchmark/config.yaml`:
+## Manual configuration (without the wizard)
+
+Edit `benchmark/config.yaml` and set env vars yourself:
 
 ```yaml
 bitbucket:
@@ -72,42 +134,43 @@ agent:
 judge:
   model: "claude-opus-4-6"
   temperature: 0
+  # For any OpenAI-compatible endpoint (DeepSeek, Ollama, vLLM, OpenAI, …):
+  # api_url: "https://api.deepseek.com/v1"
+  # api_key: "${DEEPSEEK_API_KEY}"
 ```
 
-`${VAR}` placeholders are expanded from environment variables at runtime.
+Required environment variables:
 
-## Example codebase
+| Variable | Description |
+|---|---|
+| `BITBUCKET_URL` | Bitbucket Server base URL |
+| `BITBUCKET_PROJECT` | Project key |
+| `BITBUCKET_REPO` | Repository slug |
+| `BITBUCKET_TOKEN` | Personal access token (needs PR read/write) |
+| `BITBUCKET_AGENT_ACCOUNT` | Username of the agent's Bitbucket account |
+| `ANTHROPIC_API_KEY` | Required when using Anthropic judge |
+| `AGENT_API_KEY` | Optional — passed as Bearer token to the agent |
 
-Scenarios target the **FlowMart order service** — a realistic Spring Boot / Gradle
-Java project that exists as a standalone repository.
-Mirror or fork it into your Bitbucket instance before running the benchmark:
-
-```
-github.com/your-org/flowmart-order-service
-```
-
-The repository has one branch per scenario in addition to `main`.
-All scenario branches are permanent fixtures — never merge them.
+---
 
 ## Scenarios
 
-Each scenario is a YAML file under `benchmark/scenarios/`. It declares a `from_branch`
-and a `to_branch` that must already exist in the target Bitbucket repository.
-The benchmark opens a PR from `from_branch → to_branch`, triggers the agent,
-reads back the comments, and closes the PR.
+Each scenario is a YAML file under `benchmark/scenarios/java/`.
 
-| ID | Branch | Type | What the agent must catch |
-|---|---|---|---|
-| SCEN-009 | `feature/ORD-234-buy-3-get-1-free` | bug · security · integrity · N+1 · style | Free item selected by position not cheapest price; missing ownership check; missing `@Transactional`; N+1 promotion query; no Lombok on entity |
-| SCEN-010 | `feature/ORD-301-store-credit` | security · correctness | Store credit IDOR (any user redeems any credit); credit deducted from post-tax total instead of pre-tax subtotal |
-| SCEN-011 | `hotfix/ORD-287-cancel-npe` | correctness · failure-handling | Null guard on `@OneToMany` hides Hibernate mapping error; silently skips inventory release |
+| ID | Branch | Issues the agent must catch |
+|---|---|---|
+| SCEN-009 | `feature/ORD-234-buy-3-get-1-free` | Free item picked by position not cheapest price · missing ownership check · missing `@Transactional` · N+1 promotion query · no Lombok on entity |
+| SCEN-010 | `feature/ORD-301-store-credit` | Store credit IDOR (any user redeems any credit) · credit deducted from post-tax total instead of pre-tax subtotal |
+| SCEN-011 | `hotfix/ORD-287-cancel-npe` | Null guard on `@OneToMany` hides a Hibernate mapping error and silently skips inventory release |
+
+---
 
 ## Adding a scenario
 
-**Step 1 — push the branch.** Add a feature branch to the target repository that
-contains the code problem to detect. The branch is a permanent fixture — never merge it.
+**Step 1 — push the branch** to the target repository with the code problem to detect.
+The branch is a permanent fixture — never merge it.
 
-**Step 2 — write the YAML.** Create `benchmark/scenarios/java/SCEN-NNN-name.yaml`:
+**Step 2 — write the YAML** at `benchmark/scenarios/java/SCEN-NNN-name.yaml`:
 
 ```yaml
 id: SCEN-NNN
@@ -122,8 +185,8 @@ input:
       to_branch: "main"
       title: "[BENCHMARK] SCEN-NNN: Short description"
       description: |
-        ## Jira ticket content / PR description
-        Include acceptance criteria here — the agent can read this.
+        ## Jira ticket / PR description
+        Include acceptance criteria — the agent reads this.
 
 expected_output:
   required_comments:
@@ -132,7 +195,7 @@ expected_output:
       severity: critical    # critical | major | minor
       location: { file: "src/main/java/com/flowmart/orders/service/Foo.java", line: 42 }
       description_keywords:
-        - ["keyword1", "alternative"]   # row = OR, rows = AND
+        - ["keyword1", "alternative"]   # columns = OR, rows = AND
       rationale: "Why this comment is required"
   forbidden_comments:
     - description: "Topic the agent must not raise"
@@ -149,11 +212,13 @@ metadata:
   scenario_type: bug        # bug | security | design | performance | style | test_coverage
 ```
 
-**Step 3 — verify.**
+**Step 3 — verify:**
 
 ```bash
 python cli.py run --dry-run --scenario SCEN-NNN
 ```
+
+---
 
 ## Running tests
 
@@ -162,6 +227,8 @@ cd benchmark
 pytest
 ```
 
+---
+
 ## Project structure
 
 ```
@@ -169,9 +236,10 @@ benchmark/
 ├── bitbucket/          # AgentPRView ABC + RealBitbucketFactory (atlassian-python-api)
 ├── runner/             # scenario loader, agent client, LLM judge, scorer
 ├── scenarios/
-│   └── java/           # YAML scenario definitions (one per PR branch)
+│   └── java/           # YAML scenario definitions
 ├── prompts/            # LLM judge prompt template
-├── tests/              # unit tests for judge and Bitbucket proxy
+├── tests/              # unit tests
 ├── cli.py
 └── config.yaml
+setup.sh                # interactive setup wizard
 ```
