@@ -130,6 +130,7 @@ bitbucket:
       env: BITBUCKET_TOKEN
 
 agent:
+  trigger: "http"          # http | webhook  — see below
   base_url: "http://localhost:8080"
   api_key: "${AGENT_API_KEY}"
   timeout_seconds: 120
@@ -141,6 +142,24 @@ judge:
   # api_url: "https://api.deepseek.com/v1"
   # api_key: "${DEEPSEEK_API_KEY}"
 ```
+
+### Trigger modes
+
+| `trigger` | How it works | When to use |
+|---|---|---|
+| `http` (default) | Sends `POST /review` with the PR id to `base_url` and waits for a response | Agent exposes a direct HTTP endpoint |
+| `webhook` | Adds `agent_account` as a reviewer on the PR, then waits `timeout_seconds` | Agent is wired to Bitbucket via `PR_REVIEWER_UPDATED` webhook — no HTTP call needed |
+
+**Webhook setup example:**
+
+```yaml
+agent:
+  trigger: "webhook"
+  timeout_seconds: 120   # how long to wait after adding the reviewer
+```
+
+The `agent_account` is taken from `bitbucket.connection.agent_account` — no extra config needed.
+`base_url` and `api_key` are ignored in webhook mode.
 
 Required environment variables:
 
