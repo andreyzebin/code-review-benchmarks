@@ -1,12 +1,12 @@
 # Code Review Agent Benchmark
 
-Benchmark system for measuring and regression-testing a code review agent that works with Bitbucket Server and Jira.
+Benchmark system for measuring and regression-testing a code review agent that works with Bitbucket Server.
 
 ## How it works
 
 1. Loads a YAML scenario (PR branches, expected findings)
 2. Creates a real pull request in Bitbucket from the scenario's branches
-3. Calls the agent with the PR — agent works against real Bitbucket, finds the Jira ticket on its own
+3. Calls the agent with the PR — agent works against real Bitbucket
 4. Reads back what the agent wrote (comments, review status)
 5. LLM-as-judge scores the output against expected findings
 
@@ -22,6 +22,7 @@ export BITBUCKET_URL=https://bitbucket.example.com
 export BITBUCKET_PROJECT=MYPROJ
 export BITBUCKET_REPO=my-repo
 export BITBUCKET_TOKEN=...
+export BITBUCKET_AGENT_ACCOUNT=agent-bot   # Bitbucket username of the agent under test
 export ANTHROPIC_API_KEY=...
 
 # Check scenarios load correctly
@@ -31,7 +32,7 @@ python cli.py run --dry-run
 AGENT_API_KEY=... python cli.py run --agent-url http://localhost:8080
 
 # Run a single scenario
-python cli.py run --scenario SCEN-001
+python cli.py run --scenario SCEN-009
 
 # Filter by tag
 python cli.py run --tag java --tag security
@@ -59,6 +60,7 @@ bitbucket:
     base_url: "${BITBUCKET_URL}"
     project: "${BITBUCKET_PROJECT}"
     repo: "${BITBUCKET_REPO}"
+    agent_account: "${BITBUCKET_AGENT_ACCOUNT}"
     auth:
       env: BITBUCKET_TOKEN
 
@@ -74,68 +76,83 @@ judge:
 
 `${VAR}` placeholders are expanded from environment variables at runtime.
 
+## Example codebase
+
+Scenarios target the **FlowMart order service** — a realistic Spring Boot / Gradle
+Java project that exists as a standalone repository.
+Mirror or fork it into your Bitbucket instance before running the benchmark:
+
+```
+github.com/your-org/flowmart-order-service
+```
+
+The repository has one branch per scenario in addition to `main`.
+All scenario branches are permanent fixtures — never merge them.
+
 ## Scenarios
 
-Each scenario is a YAML file that declares a `from_branch` and a `to_branch`. **The branches must already exist in the target Bitbucket repository** — the benchmark does not create or manage code. The feature branch is the actual deliverable of the scenario: it contains the bug, security flaw, or design issue that the agent is expected to catch. Preparing that branch (writing the code, pushing it) is part of authoring the scenario.
+Each scenario is a YAML file under `benchmark/scenarios/`. It declares a `from_branch`
+and a `to_branch` that must already exist in the target Bitbucket repository.
+The benchmark opens a PR from `from_branch → to_branch`, triggers the agent,
+reads back the comments, and closes the PR.
 
-At runtime the benchmark opens a PR from `from_branch` → `to_branch`, triggers the agent, reads back the comments, and closes the PR.
-
-8 built-in scenarios in `benchmark/scenarios/`:
-
-| ID | Type | Language | Branch | What's tested |
-|---|---|---|---|---|
-| SCEN-001 | bug | Java | `feature/PROJ-123-get-user-by-email` | NPE from unguarded Optional |
-| SCEN-002 | security | Python | `feature/PROJ-200-user-search` | SQL injection via f-string |
-| SCEN-003 | design | Java | `feature/PROJ-300-order-management` | God class / SRP violation |
-| SCEN-004 | performance | Python | `feature/PROJ-400-team-dashboard` | N+1 queries in loop |
-| SCEN-005 | test_coverage | TypeScript | `feature/PROJ-500-price-calc` | New function without tests |
-| SCEN-006 | style | Java | `feature/PROJ-600-product-mapper` | Clean code — agent should approve |
-| SCEN-007 | bug | Python | `feature/PROJ-700-pagination` | Off-by-one in pagination |
-| SCEN-008 | security | Java | `feature/PROJ-800-s3-upload` | Hardcoded AWS credentials |
-
-All eight branches must exist in the repository pointed to by `config.yaml`.
+| ID | Branch | Type | What the agent must catch |
+|---|---|---|---|
+| SCEN-009 | `feature/ORD-234-buy-3-get-1-free` | bug · security · integrity · N+1 · style | Free item selected by position not cheapest price; missing ownership check; missing `@Transactional`; N+1 promotion query; no Lombok on entity |
+| SCEN-010 | `feature/ORD-301-store-credit` | security · correctness | Store credit IDOR (any user redeems any credit); credit deducted from post-tax total instead of pre-tax subtotal |
+| SCEN-011 | `hotfix/ORD-287-cancel-npe` | correctness · failure-handling | Null guard on `@OneToMany` hides Hibernate mapping error; silently skips inventory release |
 
 ## Adding a scenario
 
-**Step 1 — prepare the branch.** Push a feature branch to the target repository that contains the code problem you want to test. This branch is a permanent fixture; it should never be merged. The code on the branch is the ground truth for the scenario.
+**Step 1 — push the branch.** Add a feature branch to the target repository that
+contains the code problem to detect. The branch is a permanent fixture — never merge it.
 
-**Step 2 — write the YAML.** Create `benchmark/scenarios/<language>/SCEN-NNN-name.yaml` referencing that branch:
+**Step 2 — write the YAML.** Create `benchmark/scenarios/java/SCEN-NNN-name.yaml`:
 
 ```yaml
-id: SCEN-009
-name: "Your scenario name"
-tags: [java, bug]
+id: SCEN-NNN
+name: "Short description"
+tags: [java, security]
 
 input:
   bitbucket:
     provider: real
     pull_request:
-      from_branch: "feature/PROJ-900-your-feature"
+      from_branch: "feature/ORD-NNN-short-name"
       to_branch: "main"
-      title: "[BENCHMARK] SCEN-009: Your scenario"
+      title: "[BENCHMARK] SCEN-NNN: Short description"
+      description: |
+        ## Jira ticket content / PR description
+        Include acceptance criteria here — the agent can read this.
 
 expected_output:
   required_comments:
     - id: EXP-1
       type: inline          # inline | general
       severity: critical    # critical | major | minor
-      location: { file: "src/Foo.java", line: 42 }
+      location: { file: "src/main/java/com/flowmart/orders/service/Foo.java", line: 42 }
       description_keywords:
-        - ["keyword1", "keyword2"]  # any of these must appear
+        - ["keyword1", "alternative"]   # row = OR, rows = AND
       rationale: "Why this comment is required"
   forbidden_comments:
-    - description: "Comment topic the agent must not raise"
-  expected_status_change: "NEEDS_WORK"
+    - description: "Topic the agent must not raise"
+  expected_status_change: "NEEDS_WORK"  # NEEDS_WORK | APPROVED
   thresholds:
     min_score: 0.70
     min_required_found: 1
     max_false_positives: 3
 
 metadata:
-  difficulty: medium
+  difficulty: medium        # easy | medium | hard
   language: java
-  pr_size: small
-  scenario_type: bug
+  pr_size: small            # small | medium | large
+  scenario_type: bug        # bug | security | design | performance | style | test_coverage
+```
+
+**Step 3 — verify.**
+
+```bash
+python cli.py run --dry-run --scenario SCEN-NNN
 ```
 
 ## Running tests
@@ -149,14 +166,12 @@ pytest
 
 ```
 benchmark/
-├── bitbucket/          # BitbucketPRProxy ABC + RealBitbucketFactory
+├── bitbucket/          # AgentPRView ABC + RealBitbucketFactory (atlassian-python-api)
 ├── runner/             # scenario loader, agent client, LLM judge, scorer
-├── scenarios/          # YAML test scenarios
-│   ├── java/
-│   ├── python/
-│   └── typescript/
+├── scenarios/
+│   └── java/           # YAML scenario definitions (one per PR branch)
 ├── prompts/            # LLM judge prompt template
-├── tests/              # integration tests for judge
+├── tests/              # unit tests for judge and Bitbucket proxy
 ├── cli.py
 └── config.yaml
 ```
