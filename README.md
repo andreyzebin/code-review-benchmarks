@@ -94,6 +94,9 @@ python cli.py run --scenario SCEN-009 --agent-url http://localhost:8080
 # Filter by tag
 python cli.py run --tag security --agent-url http://localhost:8080
 
+# Skip TLS verification (corporate self-signed certificates)
+python cli.py run --no-verify-ssl --agent-url http://localhost:8080
+
 # Dry-run (no real PR, no agent call — just validates YAML)
 python cli.py run --dry-run
 
