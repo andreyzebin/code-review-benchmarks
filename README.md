@@ -84,16 +84,18 @@ cd .. && rm -rf orderflow-mirror
 If the scenario branches were updated (e.g. after a code change) push only the changed branches with `--force`:
 
 ```bash
-git clone https://github.com/andreyzebin/orderflow.git orderflow-tmp
+git clone --no-single-branch https://github.com/andreyzebin/orderflow.git orderflow-tmp
 cd orderflow-tmp
 git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
-git push bitbucket feature/ORD-234-buy-3-get-1-free \
-                   feature/ORD-301-store-credit \
-                   hotfix/ORD-287-cancel-npe --force
+git push bitbucket --force \
+  origin/feature/ORD-234-buy-3-get-1-free:feature/ORD-234-buy-3-get-1-free \
+  origin/feature/ORD-301-store-credit:feature/ORD-301-store-credit \
+  origin/hotfix/ORD-287-cancel-npe:hotfix/ORD-287-cancel-npe
 cd .. && rm -rf orderflow-tmp
 ```
 
-`--force` is needed when history of a scenario branch is rewritten (e.g. hint comments removed).
+`--no-single-branch` fetches all remote branches so they are available as `origin/*` refs.
+`--force` is needed when branch history is rewritten (e.g. hint comments removed).
 
 ---
 
