@@ -175,6 +175,43 @@ Required environment variables:
 
 ---
 
+## Local configuration
+
+To override config without touching `config.yaml`, create `benchmark/config.local.yaml`
+(gitignored). Only write the keys you want to change — the rest is taken from `config.yaml`.
+
+```yaml
+# benchmark/config.local.yaml
+bitbucket:
+  connection:
+    base_url: "https://bitbucket.mycompany.com"
+    project: "MYPROJ"
+    repo: "orderflow"
+    agent_account: "review-bot"
+
+agent:
+  trigger: "webhook"
+  timeout_seconds: 180
+```
+
+Secrets (tokens, API keys) go in `.env` (also gitignored):
+
+```bash
+# .env  — copy from .env.example and fill in
+export BITBUCKET_TOKEN="ATBBxxxxxxxx"
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+```bash
+source .env
+cd benchmark
+.venv/bin/python cli.py run --agent-url http://localhost:8080
+```
+
+Neither file is committed. Claude Code does not read them unless explicitly asked.
+
+---
+
 ## Scenarios
 
 Each scenario is a YAML file under `benchmark/scenarios/java/`.
