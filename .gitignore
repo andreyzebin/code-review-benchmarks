@@ -28,6 +28,9 @@ htmlcov/
 coverage.xml
 *.lcov
 
+# Local config overrides
+benchmark/config.local.yaml
+
 # Benchmark runtime output
 benchmark/results/runs/
 benchmark/results/benchmark.db
