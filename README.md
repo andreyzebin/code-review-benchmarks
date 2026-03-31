@@ -212,6 +212,53 @@ Neither file is committed. Claude Code does not read them unless explicitly aske
 
 ---
 
+## Enterprise / corporate infrastructure
+
+### Self-signed TLS certificates
+
+If your Bitbucket Server uses a self-signed or corporate CA certificate, use `--no-verify-ssl`:
+
+```bash
+python cli.py run --no-verify-ssl --agent-url http://localhost:8080
+```
+
+For a proper fix (recommended), supply the CA bundle and optionally a client certificate
+in `config.local.yaml`:
+
+```yaml
+bitbucket:
+  connection:
+    ssl:
+      ca_cert: "/path/to/corporate-ca.crt"
+```
+
+Then run without `--no-verify-ssl` — the CA bundle is used for verification.
+
+### Mutual TLS (client certificate)
+
+Some corporate Bitbucket instances require a client certificate in addition to the Bearer
+token (e.g. when the server enforces PKI authentication).
+
+Convert your P12 to PEM once:
+
+```bash
+openssl pkcs12 -in ~/certs/client.p12 -out ~/certs/client.pem -nodes -passin pass:<password>
+chmod 600 ~/certs/client.pem
+```
+
+Then configure in `config.local.yaml`:
+
+```yaml
+bitbucket:
+  connection:
+    ssl:
+      ca_cert: "/path/to/corporate-ca.crt"   # omit if using --no-verify-ssl
+      client_cert: "/home/user/certs/client.pem"
+      # client_key: "/home/user/certs/client.key"  # if cert and key are separate files
+```
+
+---
+
 ## Scenarios
 
 Each scenario is a YAML file under `benchmark/scenarios/java/`.
