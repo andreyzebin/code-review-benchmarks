@@ -60,6 +60,10 @@ At the end it writes a `.env` file, installs Python dependencies, and runs
 
 ### 2 — Mirror the example repository
 
+> **Already mirrored and need to sync updates?** Skip to [Re-syncing after updates](#re-syncing-after-updates) below.
+
+
+
 The scenarios target the **FlowMart order service** — a Spring Boot / Gradle Java
 project at [`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow).
 Mirror it into the Bitbucket project you configured above:
@@ -74,6 +78,22 @@ cd .. && rm -rf orderflow-mirror
 
 > The repository has one branch per scenario plus `main`. Never merge scenario
 > branches — they are permanent fixtures.
+
+### Re-syncing after updates
+
+If the scenario branches were updated (e.g. after a code change) push only the changed branches with `--force`:
+
+```bash
+git clone https://github.com/andreyzebin/orderflow.git orderflow-tmp
+cd orderflow-tmp
+git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
+git push bitbucket feature/ORD-234-buy-3-get-1-free \
+                   feature/ORD-301-store-credit \
+                   hotfix/ORD-287-cancel-npe --force
+cd .. && rm -rf orderflow-tmp
+```
+
+`--force` is needed when history of a scenario branch is rewritten (e.g. hint comments removed).
 
 ---
 
