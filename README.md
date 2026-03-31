@@ -106,8 +106,12 @@ python cli.py run --compare-with last --agent-url http://localhost:8080
 # A/B test two agent versions
 python cli.py ab --agent-a http://agent-v1:8080 --agent-b http://agent-v2:8080
 
-# Show last run report
+# Show last run report (terminal table)
 python cli.py report last
+
+# Generate HTML report and open in browser
+python cli.py report last --html
+python cli.py report run-20260331-091228 --html
 
 # Run history
 python cli.py history
