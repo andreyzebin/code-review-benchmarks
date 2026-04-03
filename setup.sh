@@ -185,12 +185,12 @@ echo "config.local.yaml written."
 
 echo
 echo "─── Python environment ──────────────────────────────────────────────────"
-if [[ ! -d "$BENCHMARK_DIR/.venv" ]]; then
-    python3 -m venv "$BENCHMARK_DIR/.venv"
+if [[ ! -d "$SCRIPT_DIR/.venv" ]]; then
+    python3 -m venv "$SCRIPT_DIR/.venv"
     echo "Created .venv"
 fi
-"$BENCHMARK_DIR/.venv/bin/pip" install -q --upgrade pip
-"$BENCHMARK_DIR/.venv/bin/pip" install -q -r "$BENCHMARK_DIR/requirements.txt"
+"$SCRIPT_DIR/.venv/bin/pip" install -q --upgrade pip
+"$SCRIPT_DIR/.venv/bin/pip" install -q -r "$BENCHMARK_DIR/requirements.txt"
 echo "Dependencies installed."
 
 # ── 9. Smoke test ─────────────────────────────────────────────────────────────
@@ -199,11 +199,10 @@ echo
 echo "─── Smoke test (dry run) ────────────────────────────────────────────────"
 # shellcheck source=/dev/null
 source "$ENV_FILE"
-cd "$BENCHMARK_DIR"
 NO_VERIFY_FLAG=""
 $NO_VERIFY_SSL && NO_VERIFY_FLAG="--no-verify-ssl"
 # shellcheck disable=SC2086
-.venv/bin/python cli.py run --dry-run $NO_VERIFY_FLAG && echo "✓ Scenarios loaded OK." || true
+"$SCRIPT_DIR/.venv/bin/python" "$BENCHMARK_DIR/cli.py" run --dry-run $NO_VERIFY_FLAG && echo "✓ Scenarios loaded OK." || true
 
 # ── 10. Done ──────────────────────────────────────────────────────────────────
 
@@ -215,11 +214,10 @@ echo
 RUN_FLAGS="--agent-url $AGENT_URL"
 $NO_VERIFY_SSL && RUN_FLAGS="$RUN_FLAGS --no-verify-ssl"
 echo "  source .env"
-echo "  cd benchmark"
-echo "  .venv/bin/python cli.py run $RUN_FLAGS"
+echo "  .venv/bin/python benchmark/cli.py run $RUN_FLAGS"
 echo
 echo "Single scenario:"
-echo "  .venv/bin/python cli.py run --scenario SCEN-009 $RUN_FLAGS"
+echo "  .venv/bin/python benchmark/cli.py run --scenario SCEN-009 $RUN_FLAGS"
 echo
 echo "HTML report:"
-echo "  .venv/bin/python cli.py report last --html"
+echo "  .venv/bin/python benchmark/cli.py report last --html"

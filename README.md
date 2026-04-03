@@ -103,40 +103,39 @@ cd .. && rm -rf orderflow-tmp
 
 ```bash
 source .env
-cd benchmark
-.venv/bin/python cli.py run --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --agent-url http://localhost:8080
 ```
 
 Useful flags:
 
 ```bash
 # Single scenario
-python cli.py run --scenario SCEN-009 --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --scenario SCEN-009 --agent-url http://localhost:8080
 
 # Filter by tag
-python cli.py run --tag security --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --tag security --agent-url http://localhost:8080
 
 # Skip TLS verification (corporate self-signed certificates)
-python cli.py run --no-verify-ssl --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --no-verify-ssl --agent-url http://localhost:8080
 
 # Dry-run (no real PR, no agent call — just validates YAML)
-python cli.py run --dry-run
+.venv/bin/python benchmark/cli.py run --dry-run
 
 # Compare with the previous run
-python cli.py run --compare-with last --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --compare-with last --agent-url http://localhost:8080
 
 # A/B test two agent versions
-python cli.py ab --agent-a http://agent-v1:8080 --agent-b http://agent-v2:8080
+.venv/bin/python benchmark/cli.py ab --agent-a http://agent-v1:8080 --agent-b http://agent-v2:8080
 
 # Show last run report (terminal table)
-python cli.py report last
+.venv/bin/python benchmark/cli.py report last
 
 # Generate HTML report and open in browser
-python cli.py report last --html
-python cli.py report run-20260331-091228 --html
+.venv/bin/python benchmark/cli.py report last --html
+.venv/bin/python benchmark/cli.py report run-20260331-091228 --html
 
 # Run history
-python cli.py history
+.venv/bin/python benchmark/cli.py history
 ```
 
 ---
@@ -230,8 +229,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ```bash
 source .env
-cd benchmark
-.venv/bin/python cli.py run --agent-url http://localhost:8080
+.venv/bin/python benchmark/cli.py run --agent-url http://localhost:8080
 ```
 
 Neither file is committed. Claude Code does not read them unless explicitly asked.
@@ -347,7 +345,7 @@ metadata:
 **Step 3 — verify:**
 
 ```bash
-python cli.py run --dry-run --scenario SCEN-NNN
+.venv/bin/python benchmark/cli.py run --dry-run --scenario SCEN-NNN
 ```
 
 ---
@@ -355,8 +353,7 @@ python cli.py run --dry-run --scenario SCEN-NNN
 ## Running tests
 
 ```bash
-cd benchmark
-pytest
+cd benchmark && pytest
 ```
 
 ---
