@@ -163,6 +163,7 @@ agent:
 judge:
   model: "claude-opus-4-6"
   temperature: 0
+  output: "log"   # stream — show LLM response as it generates / log — silent (default)
   # For any OpenAI-compatible endpoint (DeepSeek, Ollama, vLLM, OpenAI, …):
   # api_url: "https://api.deepseek.com/v1"
   # api_key: "${DEEPSEEK_API_KEY}"
@@ -174,6 +175,7 @@ judge:
 |---|---|---|
 | `http` (default) | Sends `POST /review` with the PR id to `base_url` and waits for a response | Agent exposes a direct HTTP endpoint |
 | `webhook` | Adds `agent_account` as a reviewer on the PR, then waits `timeout_seconds` | Agent is wired to Bitbucket via `PR_REVIEWER_UPDATED` webhook — no HTTP call needed |
+| `cli` | Runs a local shell command and waits for it to exit | Agent is invoked via CLI (e.g. pr-agent, custom scripts) |
 
 **Webhook setup example:**
 
@@ -185,6 +187,26 @@ agent:
 
 The `agent_account` is taken from `bitbucket.connection.agent_account` — no extra config needed.
 `base_url` and `api_key` are ignored in webhook mode.
+
+**CLI trigger setup example:**
+
+```yaml
+agent:
+  trigger: "cli"
+  command: 'source .env && .venv/bin/python pr_agent/cli.py --pr_url="{pr_url}" improve --extended'
+  cwd: "~/repos/pr-agent"   # working directory (~ is expanded); defaults to current dir
+  timeout_seconds: 300
+  output: "stream"          # stream — single updating line / log — one line per output (default)
+```
+
+Available placeholders in `command`:
+
+| Placeholder | Value |
+|---|---|
+| `{pr_url}` | Full Bitbucket PR URL |
+| `{pr_id}` | Integer PR ID |
+
+The command runs via `bash`, so `source`, pipes, and shell variables work.
 
 Required environment variables:
 
@@ -240,10 +262,17 @@ Neither file is committed. Claude Code does not read them unless explicitly aske
 
 ### Self-signed TLS certificates
 
-If your Bitbucket Server uses a self-signed or corporate CA certificate, use `--no-verify-ssl`:
+If your Bitbucket Server uses a self-signed or corporate CA certificate, use `--no-verify-ssl`.
+To suppress the resulting `InsecureRequestWarning`, add to your `.env`:
 
 ```bash
-python cli.py run --no-verify-ssl --agent-url http://localhost:8080
+export PYTHONWARNINGS="ignore:Unverified HTTPS"
+```
+
+
+
+```bash
+.venv/bin/python benchmark/cli.py run --no-verify-ssl --agent-url http://localhost:8080
 ```
 
 For a proper fix (recommended), supply the CA bundle and optionally a client certificate
