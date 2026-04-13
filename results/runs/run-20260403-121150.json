@@ -1,0 +1,58 @@
+{
+  "run_id": "run-20260403-121150",
+  "run_at": "2026-04-03T12:11:50.621436",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 5,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.07891971700883005,
+      "judge_summary": "Agent error: CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n",
+      "run_at": "2026-04-03T12:11:49.613493",
+      "error": "CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 2,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0686569630051963,
+      "judge_summary": "Agent error: CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n",
+      "run_at": "2026-04-03T12:11:50.063427",
+      "error": "CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 1,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.08386132800660562,
+      "judge_summary": "Agent error: CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n",
+      "run_at": "2026-04-03T12:11:50.516837",
+      "error": "CliTrigger exited with code 1:\nTraceback (most recent call last):\n  File \"/home/andrey/repos/pr-agent/pr_agent/cli.py\", line 5, in <module>\n    from pr_agent.agent.pr_agent import PRAgent, commands\nModuleNotFoundError: No module named 'pr_agent'\n"
+    }
+  ]
+}

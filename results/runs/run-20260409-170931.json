@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260409-170931",
+  "run_at": "2026-04-09T17:09:31.765921",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "fail",
+      "score": 0.35,
+      "required_found": 2,
+      "required_total": 5,
+      "false_positives": 0,
+      "location_accuracy": 1.0,
+      "status_change_verdict": "not changed",
+      "inline_ratio": 0.0,
+      "total_comments": 13,
+      "duration_seconds": 305.21362350400886,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0430\u0448\u0451\u043b 2 \u0438\u0437 5 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0439 (EXP-1 \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u043e, EXP-2 \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e), \u043d\u043e \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0441 \u0442\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u044f\u043c\u0438 (EXP-3), \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c\u044e (EXP-4) \u0438 \u0441\u0442\u0438\u043b\u0435\u043c \u043a\u043e\u0434\u0430 (EXP-5). \u0421\u0442\u0430\u0442\u0443\u0441 PR \u043d\u0435 \u0431\u044b\u043b \u0438\u0437\u043c\u0435\u043d\u0451\u043d \u043d\u0430 \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 NEEDS_WORK. \u041c\u043d\u043e\u0433\u0438\u0435 \u0434\u0440\u0443\u0433\u0438\u0435 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f \u043f\u043e\u043b\u0435\u0437\u043d\u044b, \u043d\u043e \u043d\u0435 \u043a\u043e\u043c\u043f\u0435\u043d\u0441\u0438\u0440\u0443\u044e\u0442 \u043f\u0440\u043e\u043f\u0443\u0449\u0435\u043d\u043d\u044b\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0435.",
+      "run_at": "2026-04-09T17:01:33.279854",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/86"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "pass",
+      "score": 0.9,
+      "required_found": 2,
+      "required_total": 2,
+      "false_positives": 0,
+      "location_accuracy": 1.0,
+      "status_change_verdict": "incorrect",
+      "inline_ratio": 0.0,
+      "total_comments": 10,
+      "duration_seconds": 251.46363813598873,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0430\u0448\u0451\u043b \u043e\u0431\u0430 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f (IDOR \u0438 \u043e\u0448\u0438\u0431\u043a\u0443 \u0432 \u0440\u0430\u0441\u0447\u0451\u0442\u0435 \u043d\u0430\u043b\u043e\u0433\u0430), \u043d\u043e \u043d\u0435 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u043b \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 \u0441\u0442\u0430\u0442\u0443\u0441 PR (NEEDS_WORK).",
+      "run_at": "2026-04-09T17:05:45.301676",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/87"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "pass",
+      "score": 0.82,
+      "required_found": 1,
+      "required_total": 1,
+      "false_positives": 2,
+      "location_accuracy": 1.0,
+      "status_change_verdict": "missing",
+      "inline_ratio": 0.0,
+      "total_comments": 5,
+      "duration_seconds": 225.8542980630009,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0430\u0448\u0451\u043b \u043e\u0441\u043d\u043e\u0432\u043d\u0443\u044e \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0443 (null guard \u0432 cancelOrder) \u0438 \u0434\u0430\u043b \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u043e\u0435 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0435, \u043d\u043e \u043d\u0435 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u043b \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 \u0441\u0442\u0430\u0442\u0443\u0441 NEEDS_WORK. \u0422\u0430\u043a\u0436\u0435 \u043f\u0440\u0438\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u0434\u0432\u0430 \u043b\u0438\u0448\u043d\u0438\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f.",
+      "run_at": "2026-04-09T17:09:31.583719",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/88"
+    }
+  ]
+}

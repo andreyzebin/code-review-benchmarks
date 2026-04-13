@@ -1,0 +1,58 @@
+{
+  "run_id": "run-20260403-120930",
+  "run_at": "2026-04-03T12:09:30.762696",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 5,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0018937989952974021,
+      "judge_summary": "Agent error: CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n",
+      "run_at": "2026-04-03T12:09:30.033818",
+      "error": "CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 2,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0026125860022148117,
+      "judge_summary": "Agent error: CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n",
+      "run_at": "2026-04-03T12:09:30.351234",
+      "error": "CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 1,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.002471982006682083,
+      "judge_summary": "Agent error: CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n",
+      "run_at": "2026-04-03T12:09:30.655936",
+      "error": "CliTrigger exited with code 127:\n/bin/sh: 1: source: not found\n"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260403-160316",
+  "run_at": "2026-04-03T16:03:16.569666",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "fail",
+      "score": 0.65,
+      "required_found": 2,
+      "required_total": 5,
+      "false_positives": 5,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "fail",
+      "inline_ratio": 0.0,
+      "total_comments": 7,
+      "duration_seconds": 663.0971800850093,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043e\u0431\u043d\u0430\u0440\u0443\u0436\u0438\u043b \u0434\u0432\u0430 \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f (EXP-1, EXP-3), \u043d\u043e \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u0442\u0440\u0438 \u0434\u0440\u0443\u0433\u0438\u0445 (EXP-2, EXP-4, EXP-5), \u0432\u043a\u043b\u044e\u0447\u0430\u044f \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u043f\u043e \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438. \u0414\u043e\u0431\u0430\u0432\u0438\u043b \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0445, \u043d\u043e \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0439. \u0421\u0442\u0430\u0442\u0443\u0441 PR \u043d\u0435 \u0431\u044b\u043b \u0438\u0437\u043c\u0435\u043d\u0451\u043d \u043d\u0430 \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 NEEDS_WORK.",
+      "run_at": "2026-04-03T15:52:34.566090",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/63"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "fail",
+      "score": 0.5,
+      "required_found": 1,
+      "required_total": 2,
+      "false_positives": 2,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "incorrect",
+      "inline_ratio": 0.0,
+      "total_comments": 4,
+      "duration_seconds": 390.35493285600387,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043e\u0431\u043d\u0430\u0440\u0443\u0436\u0438\u043b \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0443 IDOR (\u043f\u0440\u0438\u043d\u0430\u0434\u043b\u0435\u0436\u043d\u043e\u0441\u0442\u044c \u043a\u0440\u0435\u0434\u0438\u0442\u0430), \u043d\u043e \u043d\u0435 \u0443\u043a\u0430\u0437\u0430\u043b \u0442\u043e\u0447\u043d\u043e\u0435 \u043c\u0435\u0441\u0442\u043e. \u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0443\u044e \u043e\u0448\u0438\u0431\u043a\u0443 \u0432 \u0440\u0430\u0441\u0447\u0451\u0442\u0435 \u043d\u0430\u043b\u043e\u0433\u0430. \u0421\u0434\u0435\u043b\u0430\u043b \u0434\u0432\u0430 \u043b\u0438\u0448\u043d\u0438\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f. \u0421\u0442\u0430\u0442\u0443\u0441 PR \u043d\u0435 \u0431\u044b\u043b \u0438\u0437\u043c\u0435\u043d\u0451\u043d (\u043e\u0436\u0438\u0434\u0430\u043b\u0441\u044f NEEDS_WORK).",
+      "run_at": "2026-04-03T15:59:05.379585",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/64"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 1,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "incorrect",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 250.22661751501437,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u043b \u043a\u043e\u0434-\u0440\u0435\u0432\u044c\u044e: \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u043a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0438, \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u044b, \u0441\u0442\u0430\u0442\u0443\u0441 PR \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0451\u043d \u043d\u0430 \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 NEEDS_WORK.",
+      "run_at": "2026-04-03T16:03:16.247462",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/65"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "run_id": "run-20260403-120656",
+  "run_at": "2026-04-03T12:06:56.952562",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 5,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0004061210056534037,
+      "judge_summary": "Agent error: [Errno 2] No such file or directory: '~/repos/pr-agent'",
+      "run_at": "2026-04-03T12:06:56.291257",
+      "error": "[Errno 2] No such file or directory: '~/repos/pr-agent'"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 2,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0005161980079719797,
+      "judge_summary": "Agent error: [Errno 2] No such file or directory: '~/repos/pr-agent'",
+      "run_at": "2026-04-03T12:06:56.586493",
+      "error": "[Errno 2] No such file or directory: '~/repos/pr-agent'"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 1,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0005150549986865371,
+      "judge_summary": "Agent error: [Errno 2] No such file or directory: '~/repos/pr-agent'",
+      "run_at": "2026-04-03T12:06:56.858258",
+      "error": "[Errno 2] No such file or directory: '~/repos/pr-agent'"
+    }
+  ]
+}

@@ -121,6 +121,10 @@ Useful flags:
 # Dry-run (no real PR, no agent call — just validates YAML)
 .venv/bin/python benchmark/cli.py run --dry-run
 
+# Benchmark specific prompt version (for evolution A/B testing)
+.venv/bin/python benchmark/cli.py run --prompts=/path/to/prompts/v2
+.venv/bin/python benchmark/cli.py run --prompts=bitbucket://server/PROJECT/prompts-repo/refs/mut-042/prompts
+
 # Compare with the previous run
 .venv/bin/python benchmark/cli.py run --compare-with last --agent-url http://localhost:8080
 
@@ -369,6 +373,7 @@ metadata:
   language: java
   pr_size: small            # small | medium | large
   scenario_type: bug        # bug | security | design | performance | style | test_coverage
+  capabilities: [business_logic, null_safety]  # for evolution capability breakdown
 ```
 
 **Step 3 — verify:**
