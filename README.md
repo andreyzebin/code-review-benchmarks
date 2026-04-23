@@ -264,10 +264,25 @@ Neither file is committed. Claude Code does not read them unless explicitly aske
 
 ## Enterprise / corporate infrastructure
 
-### Self-signed TLS certificates
+### Corporate proxies (CheckPoint, Zscaler, etc.)
 
-If your Bitbucket Server uses a self-signed or corporate CA certificate, use `--no-verify-ssl`.
-To suppress the resulting `InsecureRequestWarning`, add to your `.env`:
+On startup, `cli.py` auto-loads the `truststore` library which injects OS-level CA
+certificates into Python's SSL module (Windows Certificate Store, macOS Keychain,
+Linux `/etc/ssl/certs`). Corporate proxy CAs added to the OS trust store are picked
+up automatically — no `REQUESTS_CA_BUNDLE` or `--no-verify-ssl` needed.
+
+If your Bitbucket Server uses a self-signed or corporate CA that isn't in the OS
+trust store, either add it system-wide or pass `ca_cert` in `config.local.yaml`
+(see below).
+
+### Windows UTF-8 output
+
+`cli.py` sets `PYTHONUTF8=1` automatically so output redirection to files works
+with non-ASCII content on Windows (avoids `UnicodeEncodeError: 'charmap' codec…`).
+
+### Fallback: disable SSL verification
+
+If nothing else works, use `--no-verify-ssl`. Suppress the resulting warning:
 
 ```bash
 export PYTHONWARNINGS="ignore:Unverified HTTPS"
