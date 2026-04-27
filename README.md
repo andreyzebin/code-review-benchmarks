@@ -140,7 +140,45 @@ Useful flags:
 
 # Run history
 .venv/bin/python benchmark/cli.py history
+
+# Run all scenarios against multiple LLM providers in one pass.
+# `providers` come from agent.providers in config.local.yaml; each entry
+# is a profile name from ~/repos/.llm_creds.toml.
+.venv/bin/python benchmark/cli.py run --all-providers
+.venv/bin/python benchmark/cli.py run -p deepseek -p qwen3-6
 ```
+
+### Trace layout
+
+Set `BENCHMARK_TRACE_DIR` to dump every LLM/tool API call to disk for
+later inspection. One session per benchmark invocation:
+
+```
+<BENCHMARK_TRACE_DIR>/<YYYYMMDD-HHMMSS[-label]>/
+  bench.json      providers, scenarios, agent git_sha, judge model
+  summary.json    totals + per-provider rollup + flat rows
+  <provider>/<scenario>/attempt-NN/
+    agent/        diff-graph trace tree (LLM/tool request+response per step)
+    judge/        judge request.json / response.json
+    result.json   verdict + score for this attempt
+```
+
+`attempt-NN` auto-increments per `(provider, scenario)` — re-running the
+same session measures variance without bookkeeping. Different agent
+versions live under separate sessions; set `BENCH_LABEL` to tag them.
+
+The runner sets `DIFFGRAPH_TRACE_PATH=<...>/agent/` for each agent
+subprocess so its trace tree lands directly inside the attempt
+directory — no separate `runs/<uuid>/` to reconcile later.
+
+### LLM provider matrix
+
+`-p <name>` (repeatable) and `--all-providers` invoke the same scenarios
+against multiple LLM profiles defined in `~/repos/.llm_creds.toml`.
+Each iteration is independent: a failure in one provider/scenario is
+captured as `verdict="error"` in the result row and the matrix
+continues. The agent CLI receives `--provider=<name>` via the trigger
+command template (`{provider}` placeholder is substituted automatically).
 
 ---
 
