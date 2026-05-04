@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260504-181104",
+  "run_at": "2026-05-04T18:11:04.459476",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-200",
+      "scenario_name": "/help on a fresh PR \u2014 list supported commands",
+      "verdict": "fail",
+      "score": 0.1,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 1,
+      "duration_seconds": 422.2010289969985,
+      "judge_summary": "The agent merely echoed '/help' instead of listing the three supported commands (/review, /ask, /help), failing to address the user's request for available commands.",
+      "run_at": "2026-05-04T18:10:19.149606",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/183"
+    },
+    {
+      "scenario_id": "SCEN-201",
+      "scenario_name": "/ask references a prior thread reply \u2014 must read it",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 4,
+      "duration_seconds": 29.318168801997672,
+      "judge_summary": "The agent failed to provide any reply addressing the user's question; it only duplicated the existing conversation without offering analysis or an answer.",
+      "run_at": "2026-05-04T18:10:49.158653",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/184"
+    },
+    {
+      "scenario_id": "SCEN-202",
+      "scenario_name": "Unknown /command \u2014 agent must say 'not supported' and list options",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 1,
+      "duration_seconds": 14.532174239000597,
+      "judge_summary": "The agent merely echoed '/improve' without acknowledging that the command is unsupported, and failed to list supported commands (/review, /ask) as required. Thus the reply does not meet any of the mandatory content or addressing expectations.",
+      "run_at": "2026-05-04T18:11:04.331380",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/185"
+    }
+  ]
+}
