@@ -81,21 +81,25 @@ cd .. && rm -rf orderflow-mirror
 
 ### Re-syncing after updates
 
-If the scenario branches were updated (e.g. after a code change) push only the changed branches with `--force`:
+Three options depending on what you want to happen on Bitbucket:
 
 ```bash
-git clone --no-single-branch https://github.com/andreyzebin/orderflow.git orderflow-tmp
-cd orderflow-tmp
+git clone --bare https://github.com/andreyzebin/orderflow.git orderflow.git
+cd orderflow.git
 git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
-git push bitbucket --force \
-  origin/feature/ORD-234-buy-3-get-1-free:feature/ORD-234-buy-3-get-1-free \
-  origin/feature/ORD-301-store-credit:feature/ORD-301-store-credit \
-  origin/hotfix/ORD-287-cancel-npe:hotfix/ORD-287-cancel-npe
-cd .. && rm -rf orderflow-tmp
 ```
 
-`--no-single-branch` fetches all remote branches so they are available as `origin/*` refs.
-`--force` is needed when branch history is rewritten (e.g. hint comments removed).
+| Recipe | Behaviour |
+|---|---|
+| `git push --all --force bitbucket` | Push EVERY branch from upstream, force-overwrite tips. Branches that exist only on Bitbucket are left alone. Safest "auto-update everything" option. |
+| `git push --mirror bitbucket` | Push every ref AND delete Bitbucket-only refs that aren't on GitHub. Use when you want Bitbucket to be a 1:1 copy. Same recipe as the [initial mirror in Quickstart § 2](#2--mirror-the-example-repository). |
+| `git push --force bitbucket origin/<BRANCH>:<BRANCH> …` | Surgical: refresh only the branches you list, leave everything else (and tags) untouched. Useful when you reworked one scenario branch and don't want to touch the others. |
+
+Cleanup: `cd .. && rm -rf orderflow.git`.
+
+`--force` is needed because scenario branches sometimes have history
+rewritten (e.g. when hint comments are removed); without it Bitbucket
+rejects the push as non-fast-forward.
 
 ---
 
@@ -395,41 +399,19 @@ no status change for read-only commands):
 
 The fixture branches live in
 [`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow) on GitHub.
-Initial mirroring into your Bitbucket is covered in
-[Quickstart § 2](#2--mirror-the-example-repository); below are workflows for
-updating that mirror over time.
+First-time mirroring and ongoing re-syncs are covered in Quickstart §2:
+[Mirror the example repository](#2--mirror-the-example-repository) and
+[Re-syncing after updates](#re-syncing-after-updates).
 
 ---
 
-## Updating the fixture mirror
-
-### Sync upstream changes into an existing Bitbucket mirror
-
-When the public `orderflow` repo gets new commits or new branches, push them
-into the same Bitbucket project you mirrored to during setup:
-
-```bash
-git clone --mirror https://github.com/andreyzebin/orderflow.git orderflow-mirror
-cd orderflow-mirror
-git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
-git push --mirror bitbucket          # forces refs to match origin exactly
-cd .. && rm -rf orderflow-mirror
-```
-
-`--mirror` pushes every ref (branches + tags) and prunes anything Bitbucket
-has that GitHub no longer does. Use it when you want the Bitbucket fixture
-to be a 1:1 copy of upstream.
-
-If you only want to refresh a few specific scenario branches without
-disturbing the rest of the Bitbucket repo, see the
-[targeted re-sync recipe in Quickstart § 2](#re-syncing-after-updates).
-
-### Adding a new fixture branch
+## Adding a new fixture branch
 
 1. Branch off `master` in `orderflow` with a descriptive name
    (`feature/<TICKET>-...` or `hotfix/<TICKET>-...`).
 2. Commit the buggy / interesting state. Push to GitHub.
-3. Re-mirror to Bitbucket using the recipe above.
+3. Re-sync the Bitbucket mirror — see
+   [Re-syncing after updates](#re-syncing-after-updates).
 4. Add `benchmark/scenarios/<dir>/SCEN-NNN-*.yaml` referencing the branch
    under `input.bitbucket.pull_request.from_branch`.
 5. Verify: `python benchmark/cli.py run --scenario SCEN-NNN --dry-run`.
