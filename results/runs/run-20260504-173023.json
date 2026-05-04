@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260504-173023",
+  "run_at": "2026-05-04T17:30:23.333372",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-200",
+      "scenario_name": "/help on a fresh PR \u2014 list supported commands",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.06589519200497307,
+      "judge_summary": "Agent error: trigger comment failed: add_comment failed: HTTP 415 ",
+      "run_at": "2026-05-04T17:30:22.203875",
+      "error": "trigger comment failed: add_comment failed: HTTP 415 ",
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/168"
+    },
+    {
+      "scenario_id": "SCEN-201",
+      "scenario_name": "/ask references a prior thread reply \u2014 must read it",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.22552769400499528,
+      "judge_summary": "Agent error: trigger comment failed: add_comment failed: HTTP 415 ",
+      "run_at": "2026-05-04T17:30:22.795252",
+      "error": "trigger comment failed: add_comment failed: HTTP 415 ",
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/169"
+    },
+    {
+      "scenario_id": "SCEN-202",
+      "scenario_name": "Unknown /command \u2014 agent must say 'not supported' and list options",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.06160392099991441,
+      "judge_summary": "Agent error: trigger comment failed: add_comment failed: HTTP 415 ",
+      "run_at": "2026-05-04T17:30:23.212541",
+      "error": "trigger comment failed: add_comment failed: HTTP 415 ",
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/170"
+    }
+  ]
+}
