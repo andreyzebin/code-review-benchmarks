@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260504-201838",
+  "run_at": "2026-05-04T20:18:38.429965",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-200",
+      "scenario_name": "/help on a fresh PR \u2014 list supported commands",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 24.895610934996512,
+      "judge_summary": "Agent failed to reply at all; it did not list the three supported commands as required.",
+      "run_at": "2026-05-04T20:16:22.963306",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/186"
+    },
+    {
+      "scenario_id": "SCEN-201",
+      "scenario_name": "/ask references a prior thread reply \u2014 must read it",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 79.35559947300499,
+      "judge_summary": "The agent did not produce any reply text, failing to address the user's question about whether legacy import is the only place where order.getItems() can still be null.",
+      "run_at": "2026-05-04T20:17:42.751379",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/187"
+    },
+    {
+      "scenario_id": "SCEN-202",
+      "scenario_name": "Unknown /command \u2014 agent must say 'not supported' and list options",
+      "verdict": "fail",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "correct",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 54.546718126002816,
+      "judge_summary": "Agent provided no reply text at all. The user requested '/improve', but the agent did not respond, thus failing to mention any required terms or address the command. The only acceptable action was to state that '/improve' is unsupported and list supported commands, which was not done.",
+      "run_at": "2026-05-04T20:18:38.051186",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/188"
+    }
+  ]
+}
