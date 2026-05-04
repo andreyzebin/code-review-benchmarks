@@ -393,81 +393,54 @@ no status change for read-only commands):
 | SCEN-201 | `hotfix/ORD-287-cancel-npe` | `/ask` reads multi-author thread context (single-account simulation via `[name]` text prefixes) |
 | SCEN-202 | `hotfix/ORD-287-cancel-npe` | Unknown `/improve` answered with "not supported" + the three commands, NOT silently routed to `/ask` |
 
-The fixture branches live in a separate code repo
-([andreyzebin/orderflow](https://github.com/andreyzebin/orderflow) — see the
-test repository setup section below).
+The fixture branches live in
+[`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow) on GitHub.
+Initial mirroring into your Bitbucket is covered in
+[Quickstart § 2](#2--mirror-the-example-repository); below are workflows for
+updating that mirror over time.
 
 ---
 
-## Test repository setup
+## Updating the fixture mirror
 
-The benchmark talks to a real Bitbucket Server instance — it creates PRs from
-pre-existing branches, lets the agent review, then declines them. The branches
-themselves are fixtures: never merged, never modified per-run, owned by a
-dedicated example repository.
+### Sync upstream changes into an existing Bitbucket mirror
 
-### Canonical source
-
-The fixture project is **[andreyzebin/orderflow](https://github.com/andreyzebin/orderflow)** on GitHub.
-Each branch listed in the scenario tables above corresponds to a branch in
-that repo. Adding or evolving a fixture means committing to that repo and
-re-mirroring to whatever Bitbucket instance the benchmark runs against.
-
-### Mirroring to a corporate Bitbucket
-
-In the corp setup the fixture lives at e.g. `<PROJECT>/code-review-example-orderflow`.
-Refresh from the public source like this:
+When the public `orderflow` repo gets new commits or new branches, push them
+into the same Bitbucket project you mirrored to during setup:
 
 ```bash
-# One-time clone of the public source as a bare mirror
-git clone --mirror git@github.com:andreyzebin/orderflow.git orderflow.git
-cd orderflow.git
-
-# Add the internal Bitbucket as a push target (HTTPS or SSH)
-git remote add corp \
-  https://bitbucket.example.com/scm/<PROJECT>/code-review-example-orderflow.git
-
-# First push: every branch and every tag
-git push --mirror corp
+git clone --mirror https://github.com/andreyzebin/orderflow.git orderflow-mirror
+cd orderflow-mirror
+git remote add bitbucket https://bitbucket.example.com/scm/myproj/orderflow.git
+git push --mirror bitbucket          # forces refs to match origin exactly
+cd .. && rm -rf orderflow-mirror
 ```
 
-Re-sync after upstream changes:
+`--mirror` pushes every ref (branches + tags) and prunes anything Bitbucket
+has that GitHub no longer does. Use it when you want the Bitbucket fixture
+to be a 1:1 copy of upstream.
 
-```bash
-cd orderflow.git
-git fetch --prune origin
-git push --mirror corp
-```
-
-Point the benchmark at the corp mirror via `benchmark/config.local.yaml`:
-
-```yaml
-bitbucket:
-  connection:
-    base_url:  "https://bitbucket.example.com"
-    project:   "<PROJECT>"
-    repo:      "code-review-example-orderflow"
-    auth:
-      env: BITBUCKET_TOKEN
-```
+If you only want to refresh a few specific scenario branches without
+disturbing the rest of the Bitbucket repo, see the
+[targeted re-sync recipe in Quickstart § 2](#re-syncing-after-updates).
 
 ### Adding a new fixture branch
 
 1. Branch off `master` in `orderflow` with a descriptive name
    (`feature/<TICKET>-...` or `hotfix/<TICKET>-...`).
 2. Commit the buggy / interesting state. Push to GitHub.
-3. Re-run `git push --mirror corp` to refresh the internal Bitbucket.
-4. Add a corresponding `benchmark/scenarios/<dir>/SCEN-NNN-*.yaml` referencing
-   the branch under `input.bitbucket.pull_request.from_branch`.
+3. Re-mirror to Bitbucket using the recipe above.
+4. Add `benchmark/scenarios/<dir>/SCEN-NNN-*.yaml` referencing the branch
+   under `input.bitbucket.pull_request.from_branch`.
 5. Verify: `python benchmark/cli.py run --scenario SCEN-NNN --dry-run`.
 
 ### Multi-step iteration scenarios (planned)
 
 Some upcoming scenarios test the agent on PR re-reviews after a fix is pushed.
 They use **paired branches**: `feature/X-step0` (initial bug) and
-`feature/X-step1` (same content + the fix commit). The runner force-pushes the
-step-1 tip onto the source branch between phases, so both branches must exist
-in the mirrored Bitbucket repo before the scenario runs.
+`feature/X-step1` (same content + the fix commit). The runner force-pushes
+the step-1 tip onto the source branch between phases, so both branches must
+exist in the mirrored Bitbucket repo before the scenario runs.
 
 ---
 
