@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260504-115527",
+  "run_at": "2026-05-04T11:55:27.518776",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-009",
+      "scenario_name": "Buy-3-get-1-free promotion \u2014 multi-bug feature PR",
+      "verdict": "fail",
+      "score": 0.55,
+      "required_found": 2,
+      "required_total": 5,
+      "false_positives": 0,
+      "location_accuracy": 1.0,
+      "status_change_verdict": "not_ok",
+      "inline_ratio": 0.0,
+      "total_comments": 4,
+      "duration_seconds": 114.17130087999976,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0430\u0448\u0451\u043b 2 \u0438\u0437 5 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0445 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0439 (ownership check \u0438 Lombok), \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0431\u0430\u0433 \u0441 \u0432\u044b\u0431\u043e\u0440\u043e\u043c \u0434\u0435\u0448\u0451\u0432\u043e\u0433\u043e \u0442\u043e\u0432\u0430\u0440\u0430 (EXP-1), \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0438\u0435 \u0442\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u0438 (EXP-3) \u0438 N+1 (EXP-4). \u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u044f (LocalDate.now, unused parameter) \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b, \u043d\u043e \u043d\u0435 \u043a\u043e\u043c\u043f\u0435\u043d\u0441\u0438\u0440\u0443\u044e\u0442 \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0438. \u0421\u0442\u0430\u0442\u0443\u0441 PR \u043d\u0435 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d, \u0445\u043e\u0442\u044f \u0434\u043e\u043b\u0436\u0435\u043d \u0431\u044b\u0442\u044c NEEDS_WORK. \u041e\u0431\u0449\u0438\u0439 \u0431\u0430\u043b\u043b 0.55.",
+      "run_at": "2026-05-04T11:49:17.527267",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/162"
+    },
+    {
+      "scenario_id": "SCEN-010",
+      "scenario_name": "Customer store credit redemption \u2014 IDOR + wrong calculation",
+      "verdict": "fail",
+      "score": 0.45,
+      "required_found": 1,
+      "required_total": 2,
+      "false_positives": 0,
+      "location_accuracy": 1.0,
+      "status_change_verdict": "incorrect",
+      "inline_ratio": 0.0,
+      "total_comments": 2,
+      "duration_seconds": 111.24927257899981,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u043d\u0430\u0448\u0451\u043b \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0443\u044e \u0443\u044f\u0437\u0432\u0438\u043c\u043e\u0441\u0442\u044c IDOR (EXP-1), \u043d\u043e \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0443\u044e \u043e\u0448\u0438\u0431\u043a\u0443 \u0432 \u0440\u0430\u0441\u0447\u0451\u0442\u0435 \u043d\u0430\u043b\u043e\u0433\u0430 (EXP-2). \u0422\u0430\u043a\u0436\u0435 \u043d\u0435 \u0432\u044b\u0441\u0442\u0430\u0432\u0438\u043b \u043e\u0436\u0438\u0434\u0430\u0435\u043c\u044b\u0439 \u0441\u0442\u0430\u0442\u0443\u0441 PR. \u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0435 \u043f\u0440\u043e dead code \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e.",
+      "run_at": "2026-05-04T11:51:09.592332",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/163"
+    },
+    {
+      "scenario_id": "SCEN-011",
+      "scenario_name": "Hotfix cancel NPE \u2014 null guard hides root cause",
+      "verdict": "fail",
+      "score": 0.6,
+      "required_found": 1,
+      "required_total": 1,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "incorrect",
+      "inline_ratio": 0.0,
+      "total_comments": 2,
+      "duration_seconds": 240.8240821549989,
+      "judge_summary": "\u0410\u0433\u0435\u043d\u0442 \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0432\u044b\u044f\u0432\u0438\u043b \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0443 \u0441 null check, \u043d\u043e \u0443\u043f\u0443\u0441\u0442\u0438\u043b \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0430\u0441\u043f\u0435\u043a\u0442 \u043e Hibernate \u0438 \u0441\u043a\u0440\u044b\u0442\u0438\u0438 \u043e\u0448\u0438\u0431\u043a\u0438 inventory. \u041d\u0435 \u0432\u044b\u0441\u0442\u0430\u0432\u0438\u043b \u0441\u0442\u0430\u0442\u0443\u0441 PR.",
+      "run_at": "2026-05-04T11:55:27.057708",
+      "error": null,
+      "pr_url": "https://sberworks.ru/bitbucket-ci/projects/SBLOOM/repos/code-review-example-orderflow/pull-requests/164"
+    }
+  ]
+}
