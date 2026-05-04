@@ -371,13 +371,103 @@ bitbucket:
 
 ## Scenarios
 
-Each scenario is a YAML file under `benchmark/scenarios/java/`.
+Each scenario is a YAML file under `benchmark/scenarios/`. Two families:
+
+**Review scenarios** (`benchmark/scenarios/java/`) — agent must produce inline
+comments on the diff, judged against `required_comments`:
 
 | ID | Branch | Issues the agent must catch |
 |---|---|---|
 | SCEN-009 | `feature/ORD-234-buy-3-get-1-free` | Free item picked by position not cheapest price · missing ownership check · missing `@Transactional` · N+1 promotion query · no Lombok on entity |
 | SCEN-010 | `feature/ORD-301-store-credit` | Store credit IDOR (any user redeems any credit) · credit deducted from post-tax total instead of pre-tax subtotal |
 | SCEN-011 | `hotfix/ORD-287-cancel-npe` | Null guard on `@OneToMany` hides a Hibernate mapping error and silently skips inventory release |
+
+**Interaction scenarios** (`benchmark/scenarios/interaction/`) — agent receives a
+`/command` comment and must reply in the thread; judged against
+`expected_output.reply` (semantic match) and `side_effects` (no inline comments,
+no status change for read-only commands):
+
+| ID | Branch | What it tests |
+|---|---|---|
+| SCEN-200 | `hotfix/ORD-287-cancel-npe` | `/help` lists the three supported commands, no review |
+| SCEN-201 | `hotfix/ORD-287-cancel-npe` | `/ask` reads multi-author thread context (single-account simulation via `[name]` text prefixes) |
+| SCEN-202 | `hotfix/ORD-287-cancel-npe` | Unknown `/improve` answered with "not supported" + the three commands, NOT silently routed to `/ask` |
+
+The fixture branches live in a separate code repo
+([andreyzebin/orderflow](https://github.com/andreyzebin/orderflow) — see the
+test repository setup section below).
+
+---
+
+## Test repository setup
+
+The benchmark talks to a real Bitbucket Server instance — it creates PRs from
+pre-existing branches, lets the agent review, then declines them. The branches
+themselves are fixtures: never merged, never modified per-run, owned by a
+dedicated example repository.
+
+### Canonical source
+
+The fixture project is **[andreyzebin/orderflow](https://github.com/andreyzebin/orderflow)** on GitHub.
+Each branch listed in the scenario tables above corresponds to a branch in
+that repo. Adding or evolving a fixture means committing to that repo and
+re-mirroring to whatever Bitbucket instance the benchmark runs against.
+
+### Mirroring to a corporate Bitbucket
+
+In the corp setup the fixture lives at e.g. `<PROJECT>/code-review-example-orderflow`.
+Refresh from the public source like this:
+
+```bash
+# One-time clone of the public source as a bare mirror
+git clone --mirror git@github.com:andreyzebin/orderflow.git orderflow.git
+cd orderflow.git
+
+# Add the internal Bitbucket as a push target (HTTPS or SSH)
+git remote add corp \
+  https://bitbucket.example.com/scm/<PROJECT>/code-review-example-orderflow.git
+
+# First push: every branch and every tag
+git push --mirror corp
+```
+
+Re-sync after upstream changes:
+
+```bash
+cd orderflow.git
+git fetch --prune origin
+git push --mirror corp
+```
+
+Point the benchmark at the corp mirror via `benchmark/config.local.yaml`:
+
+```yaml
+bitbucket:
+  connection:
+    base_url:  "https://bitbucket.example.com"
+    project:   "<PROJECT>"
+    repo:      "code-review-example-orderflow"
+    auth:
+      env: BITBUCKET_TOKEN
+```
+
+### Adding a new fixture branch
+
+1. Branch off `master` in `orderflow` with a descriptive name
+   (`feature/<TICKET>-...` or `hotfix/<TICKET>-...`).
+2. Commit the buggy / interesting state. Push to GitHub.
+3. Re-run `git push --mirror corp` to refresh the internal Bitbucket.
+4. Add a corresponding `benchmark/scenarios/<dir>/SCEN-NNN-*.yaml` referencing
+   the branch under `input.bitbucket.pull_request.from_branch`.
+5. Verify: `python benchmark/cli.py run --scenario SCEN-NNN --dry-run`.
+
+### Multi-step iteration scenarios (planned)
+
+Some upcoming scenarios test the agent on PR re-reviews after a fix is pushed.
+They use **paired branches**: `feature/X-step0` (initial bug) and
+`feature/X-step1` (same content + the fix commit). The runner force-pushes the
+step-1 tip onto the source branch between phases, so both branches must exist
+in the mirrored Bitbucket repo before the scenario runs.
 
 ---
 
