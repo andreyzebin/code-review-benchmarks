@@ -1,0 +1,61 @@
+{
+  "run_id": "run-20260504-180259",
+  "run_at": "2026-05-04T18:02:59.054558",
+  "agent_url": "http://localhost:8080",
+  "results": [
+    {
+      "scenario_id": "SCEN-200",
+      "scenario_name": "/help on a fresh PR \u2014 list supported commands",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0,
+      "judge_summary": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "run_at": "2026-05-04T18:02:58.318749",
+      "error": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "pr_url": null
+    },
+    {
+      "scenario_id": "SCEN-201",
+      "scenario_name": "/ask references a prior thread reply \u2014 must read it",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0,
+      "judge_summary": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "run_at": "2026-05-04T18:02:58.707495",
+      "error": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "pr_url": null
+    },
+    {
+      "scenario_id": "SCEN-202",
+      "scenario_name": "Unknown /command \u2014 agent must say 'not supported' and list options",
+      "verdict": "error",
+      "score": 0.0,
+      "required_found": 0,
+      "required_total": 0,
+      "false_positives": 0,
+      "location_accuracy": 0.0,
+      "status_change_verdict": "n/a",
+      "inline_ratio": 0.0,
+      "total_comments": 0,
+      "duration_seconds": 0.0,
+      "judge_summary": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "run_at": "2026-05-04T18:02:59.047891",
+      "error": "ProviderError: Failed to create PR: Only one pull request may be open for a given source and target branch",
+      "pr_url": null
+    }
+  ]
+}
