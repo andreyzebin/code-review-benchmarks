@@ -4,7 +4,9 @@ This document describes the codebase for AI agents and coding assistants.
 
 ## What this project does
 
-Benchmarks a code review agent against a set of curated scenarios. Each scenario has a real feature branch in Bitbucket. The benchmark creates a PR from that branch, triggers the agent via a configurable strategy, then uses an LLM-as-judge to score whether the agent found the expected issues.
+Benchmarks a code review agent against a set of curated scenarios. Each scenario points at a real branch already published in the test repo (Bitbucket / GitHub). The benchmark creates a PR from that branch, triggers the agent via a configurable strategy, then uses an LLM-as-judge to score whether the agent found the expected issues and made a sound verdict.
+
+**The bench never pushes code.** It only performs metadata operations — create PR, post seed comments, post a trigger comment, fetch back the agent's outputs, decline the PR. All test code (branches with planted bugs, paired step0/step1 branches for incremental review, etc.) must be pre-published in the test repo.
 
 ## Repository layout
 
@@ -24,7 +26,9 @@ benchmark/
 │   ├── results_store.py    # SQLite + JSON persistence for run history
 │   └── html_report.py      # generates self-contained HTML report from results
 ├── scenarios/
-│   └── java/               # YAML scenario definitions (SCEN-009, SCEN-010, SCEN-011)
+│   ├── java/               # YAML scenario definitions (review + incremental)
+│   ├── interaction/        # /help, /ask, unknown-command, dispatcher scenarios
+│   └── drafts/             # Loader-skipped specs for not-yet-runnable scenarios
 ├── prompts/
 │   └── judge.txt           # LLM judge prompt template
 ├── tests/
@@ -221,3 +225,95 @@ comments/status). No real Bitbucket or LLM calls are made.
 2. Create `benchmark/scenarios/java/SCEN-NNN-short-name.yaml` following the format above
 3. Verify: `python cli.py run --dry-run --scenario SCEN-NNN`
 4. Run: `python cli.py run --scenario SCEN-NNN`
+
+### Test-code authoring rules
+
+The agent reads the diff, comments, AGENTS.md of the test repo, and
+arbitrary source files at will. Anything visible to the agent is fair
+game for it to use as evidence. So:
+
+- **Never** mention the scenario or its expected output in code,
+  commit message, comments, javadoc, or PR description. A line like
+  `// BUG: missing null guard` or `// intentional N+1 for SCEN-304`
+  hands the answer to the agent and invalidates the test.
+- The PR description should read like a real ticket: ID, motivation,
+  acceptance criteria. No mentions of "we are testing X" or "this PR
+  is part of a benchmark scenario".
+- Planted bugs must be visible only through code reading (a missing
+  annotation, a wrong-index `get(0)`, a per-iteration repository call).
+  No marker comments, no hint variable names like `buggyHelper`.
+- "Clean" PRs (false-positive resistance scenarios) must be genuinely
+  clean. If the agent finds a real inaccuracy in the diff that you
+  intended to be no-bug, the bug is yours — fix the test code, don't
+  forbid the finding in `forbidden_comments`.
+
+### Drafts
+
+Scenarios that need bench-side machinery that doesn't exist yet
+(BranchUpdater, multi-repo connection_override, etc.) live under
+`scenarios/drafts/`. The loader skips that directory entirely so a
+draft never accidentally runs and fails on missing branches. Each
+draft carries a `metadata.status` field and a "Bench-side TODO" block
+listing what needs to land before promotion.
+
+### Cost tags
+
+Scenarios tagged `cost:expensive` use spawn_many with several
+investigators, two-round flows, large diffs, or extra repos — they
+dominate wall-clock and token cost on a matrix run. Useful filters:
+
+```bash
+python cli.py run                              # all 11 scenarios
+python cli.py run -t cost:expensive            # only the heavy ones
+# (no native exclude flag; for "everything except expensive" use a
+#  compound tag like 'java' that the heavy ones don't carry, or
+#  --scenario for explicit lists)
+```
+
+## Aggregation across attempts
+
+LLM judges and qwen-class agents both have non-trivial variance.
+A single run can land 0.55 vs 0.75 on the same scenario back-to-back.
+
+```bash
+python cli.py run --repeat 3 -p qwen3-6
+```
+
+Each scenario runs N times, each attempt gets its own
+`attempt-NN/result.json`, and the bench summary line shows the median
+plus the `[min..max]` window. Verdict aggregation: pass when at least
+half the attempts passed; error only when every attempt errored.
+Warnings (scenario_warnings + agent_warnings) are unioned across
+attempts, deduped by `(kind, detail)` so a flaky judge that emits a
+warning on 2 of 5 attempts still surfaces it.
+
+## Judge output streams
+
+Three independent signals from the judge per scenario:
+
+- **score / required_comments / false_positives** — the binary scorecard.
+  Score and verdict feed the pass/fail call.
+- **scenario_warnings** — flags about the *test design itself*: leaky
+  description, unfulfillable expectation, contradiction with seed
+  comments, trigger mismatch, other. Critique the scenario, not the
+  agent.
+- **agent_warnings** — flags about the *agent's reasoning quality*,
+  independent of scoring: wrong-location, wrong-reasoning,
+  surface-acceptance, contradicts-codebase, methodology-gap,
+  interface-violation (no `[bot_user]` prefix or no dg footer), other.
+
+`agent_warnings` does not affect overall_score — it surfaces the kinds
+of concerns a binary scorecard misses. Two prompts that both score 0.7
+can produce very different `agent_warnings` shapes; that's the
+discriminator for prompt-comparison work.
+
+The judge is fed the actual PR diff and AGENTS.md (when available) so
+its `wrong-location` / `contradicts-codebase` / `methodology-gap`
+calls are grounded in code, not asserted from world knowledge alone.
+Both blobs are size-capped (~30k diff, ~10k AGENTS.md) before being
+substituted into the prompt.
+
+Reasonable findings the agent posts that aren't in `expected_output`
+are NOT a quality regression — they're just out-of-scope-for-the-test.
+The default agent strictness policy ("APPROVED unless a BLOCKER/MAJOR
+stands") absorbs this gracefully.
