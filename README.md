@@ -391,11 +391,26 @@ comments on the diff, judged against `required_comments`:
 `expected_output.reply` (semantic match) and `side_effects` (no inline comments,
 no status change for read-only commands):
 
+The agent supports exactly three commands, each with a distinct role,
+and all three are thread-aware when the trigger sits inside a comment
+thread:
+
+- **`/ask`** (or plain text without a slash) — *discussion*. Answer
+  scoped to the active thread's topic; sibling threads are background.
+- **`/help`** — *interface help*. Explains the commands, how to summon
+  the agent, and which command best fits the user's current situation.
+- **`/review`** — *deep analysis*. Full code review. When invoked from
+  a thread, focuses on that thread but also reads sibling threads with
+  author attribution to strengthen findings via prior debate.
+
 | ID | Branch | What it tests |
 |---|---|---|
 | SCEN-200 | `hotfix/ORD-287-cancel-npe` | `/help` lists the three supported commands, no review |
 | SCEN-201 | `hotfix/ORD-287-cancel-npe` | `/ask` reads multi-author thread context (single-account simulation via `[name]` text prefixes) |
 | SCEN-202 | `hotfix/ORD-287-cancel-npe` | Unknown `/improve` answered with "not supported" + the three commands, NOT silently routed to `/ask` |
+| SCEN-204 / 204b / 204c | `feature/ORD-234-buy-3-get-1-free` | Multi-thread comprehension. Three sibling threads on distinct topics; the same intentionally bland question (`/ask что об этом думаешь?`) is asked in each one in turn. The agent must follow `parent_id` and answer the triggered thread, not whichever sibling's text happens to match the question semantically. Crosstalk reproducer. |
+| SCEN-205 | `feature/ORD-234-buy-3-get-1-free` | Author attribution. A five-speaker debate thread; the trigger asks specifically which comments belong to `alice`. The agent must enumerate alice's two non-adjacent messages and not mix in the bot's bug report, its own past reply, or bob's verdict. |
+| SCEN-205b | `feature/ORD-234-buy-3-get-1-free` | SELF recognition. Same shape as 205 but the agent itself has two prior replies in the thread and the trigger asks "which comments are yours?". Catches the "I haven't commented yet" failure mode. Pairs with 205 to cover both directions of attribution. |
 
 The fixture branches live in
 [`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow) on GitHub.
