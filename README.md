@@ -375,7 +375,31 @@ bitbucket:
 
 ## Scenarios
 
-Each scenario is a YAML file under `benchmark/scenarios/`. Two families:
+Each scenario is a YAML file under `benchmark/scenarios/`. Three tiers:
+
+**`tier:unit`** (`benchmark/scenarios/agents/`) — isolated tests of one
+agent at a time, ~5–10 LLM calls per test. The unit suite drives the
+pre-commit gate. Uses `--mocks` to short-circuit subagent calls and
+`--user-message-from` to swap the agent's task framing without touching
+its system prompt:
+
+| ID | Agent under test | Channel | What it tests |
+|---|---|---|---|
+| `DISP-001` | `dispatcher` | PR ack reply (`pr_comments`) | `/review` spawns reviewer once, posts brief ack, doesn't mirror findings. Reviewer is mocked. |
+| `INV-001` | `investigator` | `done(findings)` (`intended_findings`) | Standalone investigator on a single focus; identifies the BLOCKER cheapest-item bug, cites AGENTS.md. |
+| `REV-001` | `reviewer` (concerns-only) | `reflect.questions_remaining` (`intended_concerns`) | LOOK phase only — surfaces concerns, no investigation/publishing. |
+| `REV-002` | `reviewer` (consolidation-only) | PR comments (`pr_comments`) | JUDGE phase only — receives prefilled findings via custom user message, consolidates, publishes. |
+
+`expected_output.assert_via` declares which channel the judge matches
+against; `expected_output.concern_focuses` adds keyword groups for
+reflect-based tests; `setup.mocks` and `trigger.user_message_from` are
+the per-scenario knobs that drive isolation.
+
+**`tier:integration`** (`benchmark/scenarios/{interaction,java}/`) —
+full-stack tests with no mocks; the dispatcher / reviewer pipeline runs
+end-to-end and findings are scored against real PR comments. Drives the
+pre-merge gate. Includes all interaction scenarios plus four java
+sentinels (009, 010, 011, 305).
 
 **Review scenarios** (`benchmark/scenarios/java/`) — agent must produce inline
 comments on the diff, judged against `required_comments`:
@@ -411,6 +435,37 @@ thread:
 | SCEN-204 / 204b / 204c | `feature/ORD-234-buy-3-get-1-free` | Multi-thread comprehension. Three sibling threads on distinct topics; the same intentionally bland question (`/ask что об этом думаешь?`) is asked in each one in turn. The agent must follow `parent_id` and answer the triggered thread, not whichever sibling's text happens to match the question semantically. Crosstalk reproducer. |
 | SCEN-205 | `feature/ORD-234-buy-3-get-1-free` | Author attribution. A five-speaker debate thread; the trigger asks specifically which comments belong to `alice`. The agent must enumerate alice's two non-adjacent messages and not mix in the bot's bug report, its own past reply, or bob's verdict. |
 | SCEN-205b | `feature/ORD-234-buy-3-get-1-free` | SELF recognition. Same shape as 205 but the agent itself has two prior replies in the thread and the trigger asks "which comments are yours?". Catches the "I haven't commented yet" failure mode. Pairs with 205 to cover both directions of attribution. |
+
+### Running tiers
+
+```bash
+# unit gate: 4 isolated tests × providers
+.venv/bin/python benchmark/cli.py run -t tier:unit -p deepseek -p qwen3 -p qwen3-6 \
+    --mode aggressive --max-per-provider 2
+
+# integration gate: 13 scenarios (interaction + 4 java sentinels)
+.venv/bin/python benchmark/cli.py run -t tier:integration -p qwen3-6 \
+    --mode aggressive --max-per-provider 2
+
+# all (unit + integration on one provider)
+.venv/bin/python benchmark/cli.py run -p qwen3-6 \
+    --mode aggressive --max-per-provider 2
+```
+
+`--mode aggressive` runs (provider × scenario × attempt) tasks in
+parallel via temp-branch PRs; `--max-per-provider N` caps concurrent
+LLM calls per model. `gentle` (default) is sequential.
+
+For agent-isolation tests the per-attempt artefacts include:
+- `agent/` — full diff-graph trace tree (request/response per step)
+- `judge/{request,response}.json` — judge prompt + verdict JSON
+- `invocations.json` — every tool call (tool, args, mocked, mock_when)
+- `result.json` — verdict + score for the attempt
+
+`BENCHMARK_TRACE_DIR=<path>` enables the per-attempt artefact tree.
+Without it, only the SQLite `~/.diffgraph/traces.db` gets the agent
+events; the bench's invocations.json + judge artefacts aren't
+written.
 
 The fixture branches live in
 [`andreyzebin/orderflow`](https://github.com/andreyzebin/orderflow) on GitHub.
