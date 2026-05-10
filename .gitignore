@@ -50,3 +50,6 @@ Thumbs.db
 
 # Local-only scratch files
 *.local.md
+
+# Bench artefacts (per-run JSON dumps, sqlite, traces)
+results/
