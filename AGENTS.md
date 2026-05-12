@@ -14,27 +14,44 @@ Benchmarks a code review agent against a set of curated scenarios. Each scenario
 benchmark/
 ├── bitbucket/
 │   ├── base.py             # AgentPRView ABC, AgentPRViewFactory ABC, data classes
-│   ├── real_factory.py     # RealBitbucketFactory + RealBitbucketPRProxy
+│   ├── real_factory.py     # RealBitbucketFactory + RealBitbucketPRProxy (integration tier)
 │   └── __init__.py         # build_proxy(cfg) entry point
 ├── runner/
-│   ├── scenario_loader.py  # load_scenarios(), Scenario dataclass, YAML schema
+│   ├── scenario_loader.py  # load_scenarios(), Scenario dataclass, YAML schema (integration tier)
 │   ├── agent_client.py     # AgentClient — HTTP POST /review to the agent under test
 │   ├── trigger.py          # Trigger ABC, HttpTrigger, WebhookTrigger (Strategy pattern)
-│   ├── judge.py            # LLMClient ABC, Judge ABC, LLMJudge, JudgeOutput
+│   ├── judge.py            # LLMClient ABC, Judge ABC, LLMJudge, JudgeOutput (shared)
 │   ├── scorer.py           # score_scenario() → ScenarioResult
-│   ├── run.py              # run_scenario() — orchestrates one scenario end-to-end
+│   ├── run.py              # run_scenario() — orchestrates one INTEGRATION scenario
+│   ├── run_unit.py         # run_unit_fixture() — UNIT-tier subprocess runner +
+│   │                       # LLMJudge invocation against FakeBenchPRView
+│   ├── fake_view.py        # FakeBenchPRView(AgentPRView) — judge's view of the
+│   │                       # in-memory fake-PR sink + payload (no Bitbucket)
 │   ├── results_store.py    # SQLite + JSON persistence for run history
 │   └── html_report.py      # generates self-contained HTML report from results
 ├── scenarios/
+│   ├── agents/             # tier:unit + tier:integration scenarios, real Bitbucket
+│   │   ├── reviewer/       # REV-001-concerns, REV-002, …
+│   │   ├── investigator/   # INV-001-cheapest-item, …
+│   │   └── dispatcher/     # DISP-001-review-spawn, DISP-002-greeting-cross-thread, …
+│   ├── unit/               # tier:unit scenarios, fake Bitbucket, local clone
+│   │   ├── reviewer/       # REV-U-001/002/003 (concerns-only)
+│   │   ├── investigator/   # INV-U-001 / INV-U-002 (standalone)
+│   │   └── dispatcher/     # DISP-U-001 / DISP-U-002 (mocked reviewer)
 │   ├── java/               # YAML scenario definitions (review + incremental)
 │   ├── interaction/        # /help, /ask, unknown-command, dispatcher scenarios
 │   └── drafts/             # Loader-skipped specs for not-yet-runnable scenarios
+├── fixtures/
+│   ├── user-messages/      # concerns-only.md and similar agent overrides
+│   └── mocks/              # ToolMocks fixtures (dispatcher-review-spawn.yaml, …)
 ├── prompts/
 │   └── judge.txt           # LLM judge prompt template
 ├── tests/
 │   ├── test_bitbucket_proxy.py
-│   └── test_judge.py
-├── cli.py                  # Typer CLI: run / report / history / ab
+│   ├── test_judge.py
+│   ├── test_run_unit_fake_pr.py        # run_unit fake-PR plumbing
+│   └── test_unit_fixture_leak_check.py # leak detection across scenarios/unit/*
+├── cli.py                  # Typer CLI: run / run-unit / report / history / ab
 ├── config.yaml             # Committed defaults (${VAR} placeholders only)
 └── config.local.yaml       # Local overrides — gitignored, not committed
 ```
@@ -103,6 +120,58 @@ Two LLM clients available:
 - `OpenAILLMClient(model, api_url, api_key)` — any OpenAI-compatible endpoint
 
 Selected by config: if `judge.api_url` is set → `OpenAILLMClient`; otherwise `AnthropicLLMClient`.
+
+The judge code path is shared between integration and unit tiers.
+For the unit tier the `AgentPRView` is `FakeBenchPRView`
+(`runner/fake_view.py`) — same interface, reads from the
+fake-bitbucket sink + payload instead of HTTP-ing a real
+Bitbucket. Switching tiers does not touch judge code.
+
+### `FakeBenchPRView` (`runner/fake_view.py`)
+
+Unit-tier view. Constructed after the agent subprocess finishes —
+takes `sink_records` (parsed JSONL the agent's post_comment /
+set_status writes landed in) and the original `payload` (repo_path,
+base/source SHAs, seed comments, metadata) and exposes them as
+the four `AgentPRView` reads the judge needs:
+
+- `get_comments()` → `CommentThread[]` synthesised from the four
+  sink kinds (`post_comment`, `post_general`, `review_comment`,
+  `reply`) — reactions / resolves / verdict events are not comments
+- `get_all_comments()` → seed comments from `pr_state.comments`
+  + the agent's posts (judge's full-thread reply path uses this)
+- `get_review_status(verdict_source)` → last `set_status` sink
+  record, or scans general comments for `[verdict:STATUS]` markers
+  when `verdict_source` is `"comment"` / `"both"`
+- `get_diff()` → `git diff base..source` against the temp clone
+- `get_raw_file(path, ref)` → `git show ref:path`
+
+No network. All methods are async to match the ABC.
+
+### `run_unit_fixture` (`runner/run_unit.py`)
+
+UNIT-tier orchestrator — equivalent of `run_scenario` for the
+fake-bitbucket path:
+
+1. Loads a unit yaml via `load_fixture()`
+2. `git clone --local --no-hardlinks` the source repo into a
+   tempdir, checks out source_branch, resolves (base, source) SHAs
+3. Writes the fake-PR payload to a temp JSON; sink to a temp
+   JSONL; passes both paths via env to diff-graph's cli.py
+4. Spawns `cli.py run --agent={agent} --pr-url=fake://… --message
+   … --mocks=… --user-message-from=… --invocations-out=…`
+5. After the subprocess exits: reads sink JSONL, force-closes the
+   agent's runs row if the subprocess died abnormally
+6. If `expected_output` is set and `judge_cfg` is supplied: builds
+   `FakeBenchPRView` + a `Scenario` dataclass via
+   `_build_scenario_from_unit_fixture` and calls
+   `LLMJudge.evaluate()` with `_finish_trace()` in a finally block
+
+OTel covered on both sides — agent via `DIFFGRAPH_TRACE_PATH=
+agent_dir`, judge via `LLMJudge.judge_dir → JudgeTraceWriter`.
+Both write a `runs` row to `~/.diffgraph/traces.db` and a
+filesystem trace tree under `attempt_dir/runs/{agent,judge}/`,
+linked via `linked_run_id`.
 
 ### `run_scenario` (`runner/run.py`)
 
@@ -194,9 +263,73 @@ metadata:
 `description_keywords` logic: each row is a list of alternatives (OR). All rows must match (AND).
 Matching is semantic, not literal substring.
 
+### Unit fixture format (`scenarios/unit/*.yaml`)
+
+Different top-level shape — drives `run_unit.py`, not the
+integration `Scenario` loader. The judge reads the same
+`expected_output` block at the bottom either way; only the
+inputs differ.
+
+```yaml
+id: REV-U-001-store-credit-concerns
+agent: reviewer                       # which agent cli.py runs
+tags: [tier:unit, agent:reviewer, isolation, concerns-only]
+bench_cmd: >                          # how plans fire this fixture
+  cd {bench_root} && source .env
+  && unset ALL_PROXY all_proxy
+  && .venv/bin/python -m benchmark.cli run-unit
+  {fixture_path} --provider={provider}
+repo:
+  source: /home/andrey/repos/code-review-examples/orderflow
+  base_branch: master
+  source_branch: feature/ORD-301-store-credit
+user_message_from: ../../../fixtures/user-messages/concerns-only.md
+mocks: ../../../fixtures/mocks/dispatcher-review-spawn.yaml  # optional
+pr_state:
+  metadata:
+    title: "…"
+    description: |
+      …
+    pr_url: "fake://orderflow/UNIT/repos/orderflow/pull-requests/301"
+    bot_user: "diffgraph-bot"
+  comments: []                        # seed threads, visible to list_threads
+trigger:
+  type: comment
+  text: "/review"
+  comment_id: 0
+agent_data:                           # interpolated into {placeholders}
+  focus: |
+    …
+expected_output:                      # same shape as integration
+  assert_via: [intended_concerns]
+  concern_focuses: [...]              # reviewer reflect rubric
+  required_comments: [...]            # investigator done rubric
+  reply: {must_mention: ..., forbidden_topics: ...}  # dispatcher
+  side_effects: {inline_comments: 0, review_status_change: false}
+  thresholds: {min_score: 0.5, ...}
+leak_allowlist: [...]                 # whitelisted scope identifiers
+metadata: {difficulty, language, ...}
+```
+
+Loader: `runner/run_unit.py:load_fixture` (returns `UnitFixture`).
+Conversion to `Scenario` for the judge:
+`runner/run_unit.py:_build_scenario_from_unit_fixture`.
+
+Two static guards keep this shape leak-free:
+
+- `tests/test_unit_fixture_leak_check.py` — no expected_output
+  keyword may appear verbatim in the agent inputs (user_message,
+  agent_data.*, pr_state.metadata, trigger.text, seed comments).
+  Generic vocabulary is allowlisted globally; structurally-
+  unavoidable overlaps go in per-fixture `leak_allowlist: [...]`
+  with a rationale comment.
+- `diff-graph/tests/test_prompts_no_fixture_leak.py` — production
+  agent prompts cannot contain fixture-specific code identifiers.
+
 ## CLI reference
 
 ```bash
+# Integration tier (real Bitbucket)
 python cli.py run --agent-url http://localhost:8080
 python cli.py run --scenario SCEN-009
 python cli.py run --tag security
@@ -207,7 +340,17 @@ python cli.py ab --agent-a http://v1:8080 --agent-b http://v2:8080
 python cli.py report last                  # terminal table
 python cli.py report last --html           # HTML file, opens in browser
 python cli.py history
+
+# Unit tier (fake Bitbucket, local clone)
+python cli.py run-unit benchmark/scenarios/unit/reviewer/REV-U-001-store-credit-concerns.yaml \
+    --provider deepseek
+python cli.py run-unit ...path... --no-judge    # agent-only smoke
+python cli.py run-unit ...path... --attempt-dir=/tmp/manual  # explicit trace dir
 ```
+
+The `--attempt-dir` is auto-derived from `BENCHMARK_TRACE_DIR`
+when fired by the quality-api worker (plan-fire flow), so plans
+get judge scores for free.
 
 ## Testing
 

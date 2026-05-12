@@ -1,29 +1,50 @@
 # Code Review Agent Benchmark
 
 Measures and regression-tests a code review agent that works against Bitbucket Server.
-Each scenario is a real pull request — the benchmark opens it, triggers the agent, reads
-back what the agent wrote, and scores it with an LLM judge.
 
-## How it works
+Two tiers of scenarios, sharing one judge:
 
 ```
-Scenario YAML
-    │  from_branch / to_branch
-    ▼
-Bitbucket Server  ◄──────────────────────────────────────────────┐
-    │  open PR                                                    │
-    ▼                                                             │
-Agent under test  ──── reviews PR, posts comments ───────────────┘
-    │
-    ▼
-Benchmark reads comments + review status (agent account only)
-    │
-    ▼
-LLM judge scores against expected_output in scenario YAML
-    │
-    ▼
-Pass / Fail  +  detailed report
+TIER 1 — INTEGRATION (bench run)        TIER 2 — UNIT (bench run-unit)
+─────────────────────────────           ────────────────────────────────
+Real Bitbucket Server (auth, API)        Fake provider, local git clone
+Full pipeline: dispatch → reviewer →     One agent in isolation
+  investigators → judge
+30-60 min / pass / N attempts × M        5-30s agent + 5-15s judge per
+  providers                                fixture; cheap to fan out
+Catches end-to-end issues, latency,      Catches prompt-shape regressions
+  multi-provider quirks                    fast, no API quota, no flakes
+                                           from real Bitbucket
+scenarios/agents/* + scenarios/java/*    scenarios/unit/*
++ scenarios/interaction/*
+
+                       │
+                       ▼
+            shared: runner/judge.py
+            (LLMJudge, JudgeOutput, judge.txt prompt)
+                       │
+                       ▼
+            ~/.diffgraph/traces.db
+            (kind=agent + kind=judge runs,
+             linked via linked_run_id)
+                       │
+                       ▼
+            /qa/scoring trend + boxplot
+            (diff-graph trace server UI)
 ```
+
+Each scenario is a yaml with `expected_output.{required_comments,
+concern_focuses,reply,thresholds,assert_via}`. The judge reads
+`assert_via` to pick its channel: `pr_comments` (real or fake-PR
+sink), `intended_findings` (`done(findings=...)` from
+invocations.json), `intended_concerns` (`reflect(questions_remaining=
+...)` + `spawn_agent(focus=...)` from invocations.json).
+
+For the broader quality-management architecture — how unit tier +
+integration tier + production pr-analytics fit together, what
+merge_acceptance_rate is, how select-golden bridges prod data into
+new bench scenarios — see
+[`diff-graph/docs/qa-architecture.md`](../diff-graph/docs/qa-architecture.md).
 
 ---
 
